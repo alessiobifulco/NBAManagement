@@ -1,0 +1,48 @@
+# Compiled class file and directories
+*.class
+bin
+build
+
+# Log file
+*.log
+
+# BlueJ files
+*.ctxt
+
+# Mobile Tools for Java (J2ME)
+.mtj.tmp/
+
+# Package Files #
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# Editor and IDE #
+.vscode
+.idea
+.DS_Store
+
+# gradle #
+.gradle
+
+# Documentation #
+*.pdf
+*.aux
+*.bbl
+*.blg
+*.out
+*.gz
+*.toc
+*.bak
+
+*.probe
+*.lock
+*.bin
+.class
+*.class
+
+.gradle
