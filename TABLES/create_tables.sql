@@ -24,7 +24,8 @@ CREATE TABLE ALLENATORE (
     nome VARCHAR(255) NOT NULL,
     cognome VARCHAR(255) NOT NULL,
     stipendio DECIMAL(15, 2) NOT NULL,
-    anni_esperienza INT NOT NULL
+    anni_esperienza INT NOT NULL,
+    free BOOLEAN NOT NULL DEFAULT FALSE
 );
 
 -- Tabella OSSERVATORE
@@ -33,7 +34,8 @@ CREATE TABLE OSSERVATORE (
     nome VARCHAR(255) NOT NULL,
     cognome VARCHAR(255) NOT NULL,
     stipendio DECIMAL(15, 2) NOT NULL,
-    anni_esperienza INT NOT NULL
+    anni_esperienza INT NOT NULL,
+    free BOOLEAN NOT NULL DEFAULT FALSE
 );
 
 -- Tabella GIOCATORE
@@ -41,6 +43,7 @@ CREATE TABLE GIOCATORE (
     idGiocatore INT AUTO_INCREMENT PRIMARY KEY,
     nome VARCHAR(255) NOT NULL,
     cognome VARCHAR(255) NOT NULL,
+    position ENUM('PG', 'SG', 'SF', 'PF', 'C') NOT NULL,
     categoria ENUM('Superstar', 'All-Star', 'Role Player', 'Bench Player') NOT NULL,
     valutazione DECIMAL(3, 1) NOT NULL,
     anni_esperienza INT NOT NULL,
@@ -57,6 +60,7 @@ CREATE TABLE SQUADRA (
     idOsservatore INT,
     n_giocatori INT NOT NULL,
     max_salariale DECIMAL(15, 2) NOT NULL,
+    conference BOOLEAN NOT NULL DEFAULT FALSE,
     FOREIGN KEY (idGM) REFERENCES GM(idGM) ON DELETE SET NULL,
     FOREIGN KEY (idAllenatore) REFERENCES ALLENATORE(idAllenatore) ON DELETE SET NULL,
     FOREIGN KEY (idOsservatore) REFERENCES OSSERVATORE(idOsservatore) ON DELETE SET NULL
@@ -66,7 +70,9 @@ CREATE TABLE SQUADRA (
 CREATE TABLE STADIO (
     idStadio INT AUTO_INCREMENT PRIMARY KEY,
     capacita INT NOT NULL,
-    citta VARCHAR(255) NOT NULL
+    citta VARCHAR(255) NOT NULL,
+    idSquadra INT,
+    FOREIGN KEY (idSquadra) REFERENCES SQUADRA(idSquadra) ON DELETE SET NULL
 );
 
 
@@ -79,6 +85,7 @@ CREATE TABLE CONTRATTO (
     data DATE NOT NULL,
     durata INT NOT NULL, -- Durata in anni
     stipendio DECIMAL(15, 2) NOT NULL,
+    stato BOOLEAN NOT NULL DEFAULT FALSE,
     FOREIGN KEY (idSquadra) REFERENCES SQUADRA(idSquadra) ON DELETE CASCADE,
     FOREIGN KEY (idGiocatore) REFERENCES GIOCATORE(idGiocatore) ON DELETE CASCADE
 );
@@ -119,6 +126,7 @@ CREATE TABLE ESERCIZIO (
 CREATE TABLE ESERCIZIO_IN_ALLENAMENTO (
     idAllenamento INT,
     idEsercizio INT,
+    serie INT NOT NULL,
     PRIMARY KEY (idAllenamento, idEsercizio),
     FOREIGN KEY (idAllenamento) REFERENCES ALLENAMENTO(idAllenamento) ON DELETE CASCADE,
     FOREIGN KEY (idEsercizio) REFERENCES ESERCIZIO(idEsercizio) ON DELETE CASCADE
@@ -128,6 +136,7 @@ CREATE TABLE ESERCIZIO_IN_ALLENAMENTO (
 CREATE TABLE GIOCATORI_OSSERVATI (
     idGiocatore INT,
     idOsservatore INT,
+    report TEXT,
     PRIMARY KEY (idGiocatore, idOsservatore),
     FOREIGN KEY (idGiocatore) REFERENCES GIOCATORE(idGiocatore) ON DELETE CASCADE,
     FOREIGN KEY (idOsservatore) REFERENCES OSSERVATORE(idOsservatore) ON DELETE CASCADE
