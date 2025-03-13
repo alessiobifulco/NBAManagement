@@ -19,6 +19,7 @@ public class DBModel implements Model {
     }
 
     // Funzione per ottenere la rosa di una squadra
+    @Override
     public List<Player> getTeamRoster(int idTeam) throws SQLException {
         List<Player> players = new ArrayList<>();
         String sql = "SELECT G.idGiocatore, G.nome, G.cognome, G.position, G.categoria, G.valutazione, G.freeagent " +
@@ -47,6 +48,7 @@ public class DBModel implements Model {
     }
 
     // Funzione per cercare free agent
+    @Override
     public List<Player> getFreeAgents() throws SQLException {
         List<Player> freeAgents = new ArrayList<>();
         String sql = "SELECT idGiocatore, nome, cognome, position, categoria, valutazione " +
@@ -72,6 +74,7 @@ public class DBModel implements Model {
     }
 
     // Funzione per creare una proposta di scambio
+    @Override
     public void createTradeProposal(int idContract1, int idContract2) throws SQLException {
         String sql = "INSERT INTO SCAMBIO (idContratto1, idContratto2, risultato, data) " +
                      "VALUES (?, ?, 'In corso', NOW())";
@@ -83,6 +86,7 @@ public class DBModel implements Model {
     }
 
     // Funzione per aggiornare lo stato di uno scambio
+    @Override
     public void updateTradeStatus(int idScambio, String status) throws SQLException {
         String sql = "UPDATE SCAMBIO SET risultato = ? WHERE idScambio = ?";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
@@ -93,6 +97,7 @@ public class DBModel implements Model {
     }
 
     // Funzione per visualizzare lo storico delle partite
+    @Override
     public List<String> getMatchHistory(int idTeam) throws SQLException {
         List<String> history = new ArrayList<>();
         String sql = "SELECT P.data, P.risultato, S1.nome AS squadra_casa, S2.nome AS squadra_ospite " +
@@ -115,6 +120,7 @@ public class DBModel implements Model {
     }
 
     // Funzione per ottenere i contratti in scadenza
+    @Override
     public List<Contract> getExpiringContracts() throws SQLException {
         List<Contract> contracts = new ArrayList<>();
         String sql = "SELECT C.idContratto, C.idGiocatore, C.idSquadra, C.stipendio, C.data, C.durata, C.stato " +
@@ -138,6 +144,7 @@ public class DBModel implements Model {
     }
 
     // Funzione per registrare l'accesso di un GM
+    @Override
     public void registerGMAccess(String email, String password) throws SQLException {
         String sql = "SELECT idGM FROM GM WHERE mail = ? AND password = ? AND idGM IN (SELECT idGM FROM SQUADRA)";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
@@ -156,6 +163,7 @@ public class DBModel implements Model {
     }
 
     // Funzione per aggiungere un contratto a una squadra
+    @Override
     public void addContractToTeam(int idPlayer, int idTeam, int salary, int years) throws SQLException {
         String sql = "INSERT INTO CONTRATTO (idSquadra, idGiocatore, data, durata, stipendio, stato) " +
                      "VALUES (?, ?, NOW(), ?, ?, TRUE)";
@@ -169,6 +177,7 @@ public class DBModel implements Model {
     }
 
     // Funzione per pianificare un allenamento
+    @Override
     public void scheduleTraining(int idCoach, int idPlayer, int duration, String focus) throws SQLException {
         String sql = "INSERT INTO ALLENAMENTO (idAllenatore, categoria, idGiocatore, durata, data, focus) " +
                      "VALUES (?, 'Gruppo', ?, ?, NOW(), ?)";
@@ -182,6 +191,7 @@ public class DBModel implements Model {
     }
 
     // Funzione per aggiungere esercizi all'allenamento
+    @Override
     public void addExerciseToTraining(int idTraining, int idExercise, int series) throws SQLException {
         String sql = "INSERT INTO ESERCIZIO_IN_ALLENAMENTO (idAllenamento, idEsercizio, serie) VALUES (?, ?, ?)";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
