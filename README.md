@@ -1,1 +1,1 @@
-progetto per corso di badi di dati
+progetto per corso di basi di dati

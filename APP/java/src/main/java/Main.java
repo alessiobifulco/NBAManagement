@@ -2,6 +2,7 @@ import core.Controller;
 import core.Model;
 import core.View;
 import data.DAOUtils;
+import view.LoginPage;
 
 public class Main {
     public static void main(String[] args) {
@@ -19,6 +20,8 @@ public class Main {
         });
         var controller = new Controller(model, view);
         view.setController(controller);
+        new LoginPage(view);
 
     }
+    
 }
