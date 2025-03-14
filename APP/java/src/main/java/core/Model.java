@@ -33,7 +33,7 @@ public interface Model {
     List<Contract> getExpiringContracts() throws SQLException;
 
     // Funzione per registrare l'accesso di un GM
-    void registerGMAccess(String email, String password) throws SQLException;
+    boolean registerGMAccess(String email, String password) throws SQLException;
 
     // Funzione per aggiungere un contratto a una squadra
     void addContractToTeam(int idPlayer, int idTeam, int salary, int years) throws SQLException;
