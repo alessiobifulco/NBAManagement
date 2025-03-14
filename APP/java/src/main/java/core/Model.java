@@ -13,7 +13,6 @@ public interface Model {
         return new DBModel(connection);
     }
 
-    
     // Funzione per ottenere la rosa di una squadra
     List<Player> getTeamRoster(int idTeam) throws SQLException;
 
@@ -44,5 +43,30 @@ public interface Model {
     // Funzione per aggiungere esercizi all'allenamento
     void addExerciseToTraining(int idTraining, int idExercise, int series) throws SQLException;
 
- 
+    // Nuovi metodi aggiunti
+
+    // Funzione per aggiungere un giocatore
+    void addPlayer(String nome, String cognome, String position, String categoria,
+                   double valutazione, int anniEsperienza) throws SQLException;
+
+    // Funzione per rimuovere un giocatore
+    void removePlayer(int idGiocatore) throws SQLException;
+
+    // Funzione per aggiungere un allenatore
+    void addCoach(String nome, String cognome, double stipendio, int anniEsperienza) throws SQLException;
+
+    // Funzione per rimuovere un allenatore
+    void removeCoach(int idAllenatore) throws SQLException;
+
+    // Funzione per aggiungere un osservatore
+    void addObserver(String nome, String cognome, double stipendio, int anniEsperienza) throws SQLException;
+
+    // Funzione per rimuovere un osservatore
+    void removeObserver(int idOsservatore) throws SQLException;
+
+    // Funzione per aggiungere una partita
+    void addGame(int idSquadra1, int idSquadra2, String risultato) throws SQLException;
+
+    // Funzione per rimuovere una partita
+    void removeGame(int idPartita) throws SQLException;
 }

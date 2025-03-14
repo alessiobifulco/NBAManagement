@@ -154,7 +154,6 @@ public class DBModel implements Model {
                 int idGM = rs.getInt("idGM");
                 System.out.println("Login valido per idGM: " + idGM);
 
-
                 String insertAccess = "INSERT INTO ACCESSO (data, idGM) VALUES (NOW(), ?)";
                 try (PreparedStatement insertStmt = connection.prepareStatement(insertAccess)) {
                     insertStmt.setInt(1, idGM);
@@ -210,4 +209,96 @@ public class DBModel implements Model {
             stmt.executeUpdate();
         }
     }
+
+    @Override
+    public void addPlayer(String nome, String cognome, String position, String categoria,
+            double valutazione, int anniEsperienza) throws SQLException {
+        String sql = "INSERT INTO GIOCATORE (nome, cognome, position, categoria, valutazione, anni_esperienza, freeagent) "
+                +
+                "VALUES (?, ?, ?, ?, ?, ?, FALSE)";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, nome);
+            stmt.setString(2, cognome);
+            stmt.setString(3, position);
+            stmt.setString(4, categoria);
+            stmt.setDouble(5, valutazione);
+            stmt.setInt(6, anniEsperienza);
+            stmt.executeUpdate();
+        }
+    }
+
+    @Override
+    public void removePlayer(int idGiocatore) throws SQLException {
+        String sql = "DELETE FROM GIOCATORE WHERE idGiocatore = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, idGiocatore);
+            stmt.executeUpdate();
+        }
+    }
+
+    @Override
+    public void addCoach(String nome, String cognome, double stipendio, int anniEsperienza) throws SQLException {
+        String sql = "INSERT INTO ALLENATORE (nome, cognome, stipendio, anni_esperienza, free) " +
+                "VALUES (?, ?, ?, ?, FALSE)";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, nome);
+            stmt.setString(2, cognome);
+            stmt.setDouble(3, stipendio);
+            stmt.setInt(4, anniEsperienza);
+            stmt.executeUpdate();
+        }
+    }
+
+    @Override
+    public void removeCoach(int idAllenatore) throws SQLException {
+        String sql = "DELETE FROM ALLENATORE WHERE idAllenatore = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, idAllenatore);
+            stmt.executeUpdate();
+        }
+    }
+
+    @Override
+    public void addObserver(String nome, String cognome, double stipendio, int anniEsperienza) throws SQLException {
+        String sql = "INSERT INTO OSSERVATORE (nome, cognome, stipendio, anni_esperienza, free) " +
+                "VALUES (?, ?, ?, ?, FALSE)";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, nome);
+            stmt.setString(2, cognome);
+            stmt.setDouble(3, stipendio);
+            stmt.setInt(4, anniEsperienza);
+            stmt.executeUpdate();
+        }
+    }
+
+    @Override
+    public void removeObserver(int idOsservatore) throws SQLException {
+        String sql = "DELETE FROM OSSERVATORE WHERE idOsservatore = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, idOsservatore);
+            stmt.executeUpdate();
+        }
+    }
+
+    @Override
+    public void addGame(int idSquadra1, int idSquadra2, String risultato) throws SQLException {
+        String sql = "INSERT INTO PARTITA (idSquadra1, idSquadra2, risultato, data) " +
+                "VALUES (?, ?, ?, NOW())";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, idSquadra1);
+            stmt.setInt(2, idSquadra2);
+            stmt.setString(3, risultato);
+            stmt.executeUpdate();
+        }
+    }
+
+    @Override
+    public void removeGame(int idPartita) throws SQLException {
+        String sql = "DELETE FROM PARTITA WHERE idPartita = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, idPartita);
+            stmt.executeUpdate();
+        }
+    }
+
 }
