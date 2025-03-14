@@ -6,10 +6,10 @@ import view.LoginPage;
 
 public class Main {
     public static void main(String[] args) {
-        // Collega al database NBA_System
+        // Collega al database NBA_Management
         var connection = DAOUtils.localMySQLConnection("NBA_Management", "root", "BLS007ab&");
-        // Stampa il messaggio di successo della connessione
         System.out.println("Connessione al database avvenuta con successo.");
+
         var model = Model.fromConnection(connection);
         var view = new View(() -> {
             try {
@@ -18,10 +18,11 @@ public class Main {
                 e.printStackTrace();
             }
         });
+
         var controller = new Controller(model, view);
         view.setController(controller);
-        new LoginPage(view);
 
+        // Avvia la schermata di login con il model
+        new LoginPage(view.getFrame(), model);
     }
-    
 }
