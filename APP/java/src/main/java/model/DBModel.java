@@ -410,4 +410,52 @@ public class DBModel implements Model {
         return teamId;
     }
 
+    // Nel Model (aggiungi questo metodo)
+    @Override
+    public void removePlayerByNameAndSurname(String playerName, String playerSurname) throws SQLException {
+        String sql = "DELETE FROM Player WHERE name = ? AND surname = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, playerName);
+            stmt.setString(2, playerSurname);
+            int rowsAffected = stmt.executeUpdate();
+            if (rowsAffected == 0) {
+                throw new SQLException("No player found with name: " + playerName + " and surname: " + playerSurname);
+            }
+        } catch (SQLException ex) {
+            throw new SQLException("Error removing player: " + ex.getMessage());
+        }
+    }
+
+    @Override
+    public void removeObserverByNameAndSurname(String name, String surname) throws SQLException {
+        String query = "DELETE FROM Observer WHERE name = ? AND surname = ?";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            preparedStatement.setString(1, name);
+            preparedStatement.setString(2, surname);
+            int rowsAffected = preparedStatement.executeUpdate();
+            if (rowsAffected == 0) {
+                throw new SQLException("No observer found with the provided name and surname.");
+            }
+        } catch (SQLException ex) {
+            throw new SQLException("Error removing observer: " + ex.getMessage(), ex);
+        }
+    }
+
+    @Override
+    public void removeCoachByNameAndSurname(String name, String surname) throws SQLException {
+        String query = "DELETE FROM Coach WHERE name = ? AND surname = ?";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            preparedStatement.setString(1, name);
+            preparedStatement.setString(2, surname);
+            int rowsAffected = preparedStatement.executeUpdate();
+            if (rowsAffected == 0) {
+                throw new SQLException("No coach found with the provided name and surname.");
+            }
+        } catch (SQLException ex) {
+            throw new SQLException("Error removing coach: " + ex.getMessage(), ex);
+        }
+    }
+    
+    
+
 }

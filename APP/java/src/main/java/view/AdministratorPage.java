@@ -3,7 +3,6 @@ package view;
 import core.Model;
 import javax.swing.*;
 import java.awt.*;
-
 import java.sql.SQLException;
 
 public class AdministratorPage extends JFrame {
@@ -29,26 +28,41 @@ public class AdministratorPage extends JFrame {
         // Add or remove players
         JButton addRemovePlayerButton = new JButton("Add/Remove Player");
         addRemovePlayerButton.addActionListener(e -> {
-            String playerName = JOptionPane.showInputDialog(this, "Enter player name:");
-            if (playerName != null) {
-                String action = JOptionPane.showInputDialog(this, "Enter action (add/remove):");
-                if ("add".equalsIgnoreCase(action)) {
+            String action = JOptionPane.showInputDialog(this, "Enter action (add/remove):");
+            if ("add".equalsIgnoreCase(action)) {
+                String playerName = JOptionPane.showInputDialog(this, "Enter player name:");
+                if (playerName != null) {
                     String surname = JOptionPane.showInputDialog(this, "Enter surname:");
-                    String position = JOptionPane.showInputDialog(this, "Enter position:");
-                    String category = JOptionPane.showInputDialog(this, "Enter category:");
+                    String[] positions = {"Guard", "Forward", "Center"};
+                    String position = (String) JOptionPane.showInputDialog(this, "Select position:", "Position", JOptionPane.QUESTION_MESSAGE, null, positions, positions[0]);
+                    String[] categories = {"Superstar", "All-Star", "Role Player", "Bench Player"};
+                    String category = (String) JOptionPane.showInputDialog(this, "Select category:", "Category", JOptionPane.QUESTION_MESSAGE, null, categories, categories[0]);
                     double rating = Double.parseDouble(JOptionPane.showInputDialog(this, "Enter rating:"));
                     int experience = Integer.parseInt(JOptionPane.showInputDialog(this, "Enter years of experience:"));
 
+                    // Chiamata al metodo addPlayer
                     try {
                         model.addPlayer(playerName, surname, position, category, rating, experience);
                         JOptionPane.showMessageDialog(this, "Player added successfully!");
                     } catch (SQLException ex) {
                         JOptionPane.showMessageDialog(this, "Error adding player: " + ex.getMessage());
                     }
-                } else if ("remove".equalsIgnoreCase(action)) {
+                }
+            } else if ("remove".equalsIgnoreCase(action)) {
+                String removeOption = JOptionPane.showInputDialog(this, "Do you want to remove by ID or Name/Surname? (ID/Name/Surname)");
+                if ("ID".equalsIgnoreCase(removeOption)) {
                     int playerId = Integer.parseInt(JOptionPane.showInputDialog(this, "Enter player ID to remove:"));
                     try {
                         model.removePlayer(playerId);
+                        JOptionPane.showMessageDialog(this, "Player removed successfully!");
+                    } catch (SQLException ex) {
+                        JOptionPane.showMessageDialog(this, "Error removing player: " + ex.getMessage());
+                    }
+                } else if ("Name/Surname".equalsIgnoreCase(removeOption)) {
+                    String playerName = JOptionPane.showInputDialog(this, "Enter player name:");
+                    String surname = JOptionPane.showInputDialog(this, "Enter player surname:");
+                    try {
+                        model.removePlayerByNameAndSurname(playerName, surname);
                         JOptionPane.showMessageDialog(this, "Player removed successfully!");
                     } catch (SQLException ex) {
                         JOptionPane.showMessageDialog(this, "Error removing player: " + ex.getMessage());
@@ -60,10 +74,10 @@ public class AdministratorPage extends JFrame {
         // Add or remove coaches
         JButton addRemoveCoachButton = new JButton("Add/Remove Coach");
         addRemoveCoachButton.addActionListener(e -> {
-            String coachName = JOptionPane.showInputDialog(this, "Enter coach name:");
-            if (coachName != null) {
-                String action = JOptionPane.showInputDialog(this, "Enter action (add/remove):");
-                if ("add".equalsIgnoreCase(action)) {
+            String action = JOptionPane.showInputDialog(this, "Enter action (add/remove):");
+            if ("add".equalsIgnoreCase(action)) {
+                String coachName = JOptionPane.showInputDialog(this, "Enter coach name:");
+                if (coachName != null) {
                     String surname = JOptionPane.showInputDialog(this, "Enter surname:");
                     double salary = Double.parseDouble(JOptionPane.showInputDialog(this, "Enter salary:"));
                     int experience = Integer.parseInt(JOptionPane.showInputDialog(this, "Enter years of experience:"));
@@ -74,10 +88,22 @@ public class AdministratorPage extends JFrame {
                     } catch (SQLException ex) {
                         JOptionPane.showMessageDialog(this, "Error adding coach: " + ex.getMessage());
                     }
-                } else if ("remove".equalsIgnoreCase(action)) {
+                }
+            } else if ("remove".equalsIgnoreCase(action)) {
+                String removeOption = JOptionPane.showInputDialog(this, "Do you want to remove by ID or Name/Surname? (ID/Name/Surname)");
+                if ("ID".equalsIgnoreCase(removeOption)) {
                     int coachId = Integer.parseInt(JOptionPane.showInputDialog(this, "Enter coach ID to remove:"));
                     try {
                         model.removeCoach(coachId);
+                        JOptionPane.showMessageDialog(this, "Coach removed successfully!");
+                    } catch (SQLException ex) {
+                        JOptionPane.showMessageDialog(this, "Error removing coach: " + ex.getMessage());
+                    }
+                } else if ("Name/Surname".equalsIgnoreCase(removeOption)) {
+                    String coachName = JOptionPane.showInputDialog(this, "Enter coach name:");
+                    String surname = JOptionPane.showInputDialog(this, "Enter coach surname:");
+                    try {
+                        model.removeCoachByNameAndSurname(coachName, surname);
                         JOptionPane.showMessageDialog(this, "Coach removed successfully!");
                     } catch (SQLException ex) {
                         JOptionPane.showMessageDialog(this, "Error removing coach: " + ex.getMessage());
@@ -89,10 +115,10 @@ public class AdministratorPage extends JFrame {
         // Add or remove observers
         JButton addRemoveObserverButton = new JButton("Add/Remove Observer");
         addRemoveObserverButton.addActionListener(e -> {
-            String observerName = JOptionPane.showInputDialog(this, "Enter observer name:");
-            if (observerName != null) {
-                String action = JOptionPane.showInputDialog(this, "Enter action (add/remove):");
-                if ("add".equalsIgnoreCase(action)) {
+            String action = JOptionPane.showInputDialog(this, "Enter action (add/remove):");
+            if ("add".equalsIgnoreCase(action)) {
+                String observerName = JOptionPane.showInputDialog(this, "Enter observer name:");
+                if (observerName != null) {
                     String surname = JOptionPane.showInputDialog(this, "Enter surname:");
                     double salary = Double.parseDouble(JOptionPane.showInputDialog(this, "Enter salary:"));
                     int experience = Integer.parseInt(JOptionPane.showInputDialog(this, "Enter years of experience:"));
@@ -103,10 +129,22 @@ public class AdministratorPage extends JFrame {
                     } catch (SQLException ex) {
                         JOptionPane.showMessageDialog(this, "Error adding observer: " + ex.getMessage());
                     }
-                } else if ("remove".equalsIgnoreCase(action)) {
+                }
+            } else if ("remove".equalsIgnoreCase(action)) {
+                String removeOption = JOptionPane.showInputDialog(this, "Do you want to remove by ID or Name/Surname? (ID/Name/Surname)");
+                if ("ID".equalsIgnoreCase(removeOption)) {
                     int observerId = Integer.parseInt(JOptionPane.showInputDialog(this, "Enter observer ID to remove:"));
                     try {
                         model.removeObserver(observerId);
+                        JOptionPane.showMessageDialog(this, "Observer removed successfully!");
+                    } catch (SQLException ex) {
+                        JOptionPane.showMessageDialog(this, "Error removing observer: " + ex.getMessage());
+                    }
+                } else if ("Name/Surname".equalsIgnoreCase(removeOption)) {
+                    String observerName = JOptionPane.showInputDialog(this, "Enter observer name:");
+                    String surname = JOptionPane.showInputDialog(this, "Enter observer surname:");
+                    try {
+                        model.removeObserverByNameAndSurname(observerName, surname);
                         JOptionPane.showMessageDialog(this, "Observer removed successfully!");
                     } catch (SQLException ex) {
                         JOptionPane.showMessageDialog(this, "Error removing observer: " + ex.getMessage());

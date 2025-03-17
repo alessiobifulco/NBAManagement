@@ -79,6 +79,10 @@ public interface Model {
     // Funzione per visualizzare lo storico delle partite
     List<String> getMatchHistory(int idTeam) throws SQLException;
 
-    int getTeamIdByGM(String username, String password);
+    int getTeamIdByGM(String username, String password) throws SQLException;
+
+     void removePlayerByNameAndSurname(String playerName, String playerSurname) throws SQLException;
+ void removeObserverByNameAndSurname(String name, String surname) throws SQLException ;
+ void removeCoachByNameAndSurname(String name, String surname) throws SQLException;
 
 }
