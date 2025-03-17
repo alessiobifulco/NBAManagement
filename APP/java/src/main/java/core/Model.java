@@ -25,9 +25,6 @@ public interface Model {
     // Funzione per aggiornare lo stato di uno scambio
     void updateTradeStatus(int idScambio, String status) throws SQLException;
 
-    // Funzione per visualizzare lo storico delle partite
-    List<String> getMatchHistory(int idTeam) throws SQLException;
-
     // Funzione per ottenere i contratti in scadenza
     List<Contract> getExpiringContracts() throws SQLException;
 
@@ -47,7 +44,7 @@ public interface Model {
 
     // Funzione per aggiungere un giocatore
     void addPlayer(String nome, String cognome, String position, String categoria,
-                   double valutazione, int anniEsperienza) throws SQLException;
+            double valutazione, int anniEsperienza) throws SQLException;
 
     // Funzione per rimuovere un giocatore
     void removePlayer(int idGiocatore) throws SQLException;
@@ -69,4 +66,19 @@ public interface Model {
 
     // Funzione per rimuovere una partita
     void removeGame(int idPartita) throws SQLException;
+
+    // Funzione per ottenere lo storico degli allenamenti
+    List<String> getTrainingHistory(int idTeam) throws SQLException;
+
+    // Funzione per ottenere lo storico degli scambi
+    List<String> getTradeHistory(int idTeam) throws SQLException;
+
+    // Funzione per ottenere lo storico dei contratti
+    List<String> getContractHistory(int idTeam) throws SQLException;
+
+    // Funzione per visualizzare lo storico delle partite
+    List<String> getMatchHistory(int idTeam) throws SQLException;
+
+    int getTeamIdByGM(String username, String password);
+
 }

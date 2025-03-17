@@ -395,3 +395,15 @@ INSERT INTO GIOCATORI_OSSERVATI (idGiocatore, idOsservatore, report) VALUES
 -- Kings
 (55, 9, 'Ottimo tiro da 3 punti, ma deve migliorare la difesa.'),
 (56, 10, 'Ottimo tiro da 3 punti, ma deve migliorare la difesa.');
+
+INSERT INTO PARTITA (idSquadra1, idSquadra2, idStadio, risultato, data) VALUES
+(1, 2, 1, '102-98', '2023-03-01'),
+(5, 4, 5, '110-115', '2023-03-02'),
+(1, 3, 1, '99-101', '2023-03-03'),
+(5, 2, 5, '120-105', '2023-03-04'),
+(2, 5, 2, '95-89', '2023-03-05'),
+(3, 1, 3, '108-112', '2023-03-06'),
+(4, 1, 4, '101-99', '2023-03-07'),
+(5, 1, 5, '90-85', '2023-03-08'),
+(4, 3, 4, '115-118', '2023-03-09'),
+(3, 1, 3, '105-102', '2023-03-10');

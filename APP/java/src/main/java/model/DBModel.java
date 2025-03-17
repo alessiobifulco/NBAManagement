@@ -107,12 +107,17 @@ public class DBModel implements Model {
             stmt.setInt(1, idTeam);
             stmt.setInt(2, idTeam);
             ResultSet rs = stmt.executeQuery();
+
+            int count = 0; // Contatore per vedere quante righe vengono restituite
             while (rs.next()) {
                 history.add(rs.getString("data") + " - " +
                         rs.getString("risultato") + " - " +
                         rs.getString("squadra_casa") + " vs " +
                         rs.getString("squadra_ospite"));
+                count++;
             }
+
+            System.out.println("Number of matches found: " + count); // Stampa del conteggio
         }
         return history;
     }
@@ -299,6 +304,110 @@ public class DBModel implements Model {
             stmt.setInt(1, idPartita);
             stmt.executeUpdate();
         }
+    }
+
+    @Override
+    public List<String> getTrainingHistory(int idTeam) throws SQLException {
+        List<String> trainingHistory = new ArrayList<>();
+
+        // Query che unisce SQUADRA, ALLENATORE e ALLENAMENTO
+        String sql = "SELECT A.data, A.focus, G.nome AS nome_giocatore, G.cognome AS cognome_giocatore " +
+                "FROM ALLENAMENTO A " +
+                "JOIN ALLENATORE AL ON A.idAllenatore = AL.idAllenatore " +
+                "JOIN GIOCATORE G ON A.idGiocatore = G.idGiocatore " +
+                "WHERE AL.idAllenatore = (SELECT idAllenatore FROM SQUADRA WHERE idSquadra = ?) " + // Risale
+                                                                                                    // all'allenatore
+                                                                                                    // della squadra
+                "ORDER BY A.data DESC"; // Ordina per data
+
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, idTeam); // Passi l'idSquadra (idTeam) come parametro per ottenere l'allenatore
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                String record = "Date: " + rs.getString("data") + ", Focus: " + rs.getString("focus") +
+                        ", Player: " + rs.getString("nome_giocatore") + " " + rs.getString("cognome_giocatore");
+                trainingHistory.add(record);
+            }
+        }
+        return trainingHistory;
+    }
+
+    @Override
+    public List<String> getTradeHistory(int idTeam) throws SQLException {
+        List<String> tradeHistory = new ArrayList<>();
+        String sql = "SELECT S1.nome AS squadra_iniziale, S2.nome AS squadra_destinazione, " +
+                "P1.nome AS player_iniziale, P2.nome AS player_destinazione, " +
+                "T.data, T.risultato " +
+                "FROM SCAMBIO T " +
+                "JOIN CONTRATTO C1 ON T.idContratto1 = C1.idContratto " +
+                "JOIN CONTRATTO C2 ON T.idContratto2 = C2.idContratto " +
+                "JOIN SQUADRA S1 ON C1.idSquadra = S1.idSquadra " +
+                "JOIN SQUADRA S2 ON C2.idSquadra = S2.idSquadra " +
+                "JOIN GIOCATORE P1 ON C1.idGiocatore = P1.idGiocatore " +
+                "JOIN GIOCATORE P2 ON C2.idGiocatore = P2.idGiocatore " +
+                "WHERE S1.idSquadra = ? OR S2.idSquadra = ? " +
+                "ORDER BY T.data DESC"; // Orders by most recent trade
+
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, idTeam);
+            stmt.setInt(2, idTeam);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                String record = "Date: " + rs.getString("data") + ", Result: " + rs.getString("risultato") +
+                        ", From: " + rs.getString("squadra_iniziale") + " to " + rs.getString("squadra_destinazione") +
+                        ", Players: " + rs.getString("player_iniziale") + " -> " + rs.getString("player_destinazione");
+                tradeHistory.add(record);
+            }
+        }
+        return tradeHistory;
+    }
+
+    @Override
+    public List<String> getContractHistory(int idTeam) throws SQLException {
+        List<String> contractHistory = new ArrayList<>();
+        String sql = "SELECT G.nome AS nome_giocatore, G.cognome AS cognome_giocatore, " +
+                "C.data, C.durata, C.stipendio, S.nome AS squadra_nome " +
+                "FROM CONTRATTO C " +
+                "JOIN GIOCATORE G ON C.idGiocatore = G.idGiocatore " +
+                "JOIN SQUADRA S ON C.idSquadra = S.idSquadra " +
+                "WHERE S.idSquadra = ? AND C.stato = TRUE " +
+                "ORDER BY C.data DESC"; // Orders by most recent contract
+
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, idTeam);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                String record = "Player: " + rs.getString("nome_giocatore") + " " + rs.getString("cognome_giocatore") +
+                        ", Team: " + rs.getString("squadra_nome") + ", Date: " + rs.getString("data") +
+                        ", Duration: " + rs.getInt("durata") + " years, Salary: " + rs.getDouble("stipendio");
+                contractHistory.add(record);
+            }
+        }
+        return contractHistory;
+    }
+
+    @Override
+    public int getTeamIdByGM(String username, String password) {
+        int teamId = -1;
+        String query = "SELECT S.idSquadra FROM SQUADRA S " +
+                "JOIN GM G ON S.idGM = G.idGM " +
+                "WHERE G.mail = ? AND G.password = ?";
+
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setString(1, username);
+            stmt.setString(2, password);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                teamId = rs.getInt("idSquadra"); // Ottieni idSquadra dalla tabella SQUADRA
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return teamId;
     }
 
 }
