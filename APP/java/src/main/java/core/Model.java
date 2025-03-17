@@ -81,8 +81,10 @@ public interface Model {
 
     int getTeamIdByGM(String username, String password) throws SQLException;
 
-     void removePlayerByNameAndSurname(String playerName, String playerSurname) throws SQLException;
- void removeObserverByNameAndSurname(String name, String surname) throws SQLException ;
- void removeCoachByNameAndSurname(String name, String surname) throws SQLException;
+    void removePlayerByNameAndSurname(String playerName, String playerSurname) throws SQLException;
+
+    void removeObserverByNameAndSurname(String name, String surname) throws SQLException;
+
+    void removeCoachByNameAndSurname(String name, String surname) throws SQLException;
 
 }

@@ -4,6 +4,8 @@ import core.Model;
 import javax.swing.*;
 import java.awt.*;
 import java.sql.SQLException;
+@SuppressWarnings("unused")
+
 
 public class AdministratorPage extends JFrame {
 

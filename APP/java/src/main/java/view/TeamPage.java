@@ -3,8 +3,10 @@ package view;
 import core.Model;
 import javax.swing.*;
 import java.awt.*;
+@SuppressWarnings("unused")
 
 public class TeamPage extends JFrame {
+
 
     private final Model model;
     private final JFrame frame;

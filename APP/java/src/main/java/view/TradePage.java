@@ -1,7 +1,6 @@
 package view;
 
 import core.Model;
-import core.View;
 import javax.swing.*;
 import java.awt.*;
 

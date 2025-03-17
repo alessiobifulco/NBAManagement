@@ -6,6 +6,8 @@ import java.awt.*;
 import java.sql.SQLException;
 import java.util.List;
 
+@SuppressWarnings("unused")
+
 public class HistoryPage extends JFrame {
 
     private Model model;
