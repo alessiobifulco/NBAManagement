@@ -1,12 +1,13 @@
 package view;
 
+import core.Model;
 import core.View;
 import javax.swing.*;
 import java.awt.*;
 
 public class StaffPage extends JFrame {
 
-    public StaffPage(View view) {
+    public StaffPage(JFrame jFrame, Model model) {    
         setTitle("Staff");
         setExtendedState(JFrame.MAXIMIZED_BOTH);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -14,7 +15,6 @@ public class StaffPage extends JFrame {
 
         JButton backButton = new JButton("Back to Team");
         backButton.addActionListener(e -> {
-            new TeamPage(view);
             dispose();
         });
 

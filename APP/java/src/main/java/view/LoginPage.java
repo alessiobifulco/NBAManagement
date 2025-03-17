@@ -51,7 +51,8 @@ public class LoginPage {
                             // Verifica le credenziali con il Model
                             if (model.registerGMAccess(email, password)) {
                                 // Se le credenziali sono valide, passa alla TeamPage
-                                new TeamPage(frame, model);
+                                
+                                new TeamPage(frame, model, model.getTeamIdByGM(email, password));
                                 frame.dispose();  // Chiudi la finestra di login
                             } else {
                                 // Se le credenziali sono errate, mostra un messaggio di errore

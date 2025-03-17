@@ -10,6 +10,7 @@ public class View {
 
     public View(Runnable onClose) {
         this.frame = new JFrame();
+        frame.setVisible(true);
  
     }
 
@@ -18,5 +19,9 @@ public class View {
 
     public void showErrorMessage(String message) {
         JOptionPane.showMessageDialog(frame, message, "Errore", JOptionPane.ERROR_MESSAGE);
+    }
+
+    public JFrame getFrame() {
+        return this.frame;
     }
 }
