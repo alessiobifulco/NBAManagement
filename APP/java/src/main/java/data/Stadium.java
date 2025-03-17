@@ -13,6 +13,5 @@ public class Stadium {
         this.city = city;
         this.capacity = capacity;
         this.idTeam = idTeam;
-        this.idStadium = idStadium++;
     }
 }

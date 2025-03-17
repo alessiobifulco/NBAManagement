@@ -20,11 +20,9 @@ public class Training {
         this.duration = duration;
         this.date = date;
         this.description = description;
-        this.idTraining = idTraining++;
     }
 
     public Training(int idCoach, Category category, double duration, LocalDate date, String description){
-        this.idTraining = idTraining++;
         this.idCoach = idCoach;
         this.category = category;
         this.idPlayer = 0;

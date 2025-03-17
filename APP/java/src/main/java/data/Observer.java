@@ -15,6 +15,5 @@ public class Observer {
         this.salary = salary;
         this.expereince = expereince;
         this.free = free;
-        this.idObserver = idObserver++;
     }
 }

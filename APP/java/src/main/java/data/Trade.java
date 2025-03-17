@@ -15,6 +15,5 @@ public class Trade {
         this.idContract2 = idContract2;
         this.state = state;
         this.date = date;
-        this.idTrade = idTrade++;
     }
 }

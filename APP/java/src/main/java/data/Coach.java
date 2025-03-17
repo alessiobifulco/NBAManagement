@@ -15,6 +15,5 @@ public class Coach {
         this.salary = salary;
         this.expereince = expereince;
         this.free = free;
-        this.idCoach = idCoach++;
     }
 }

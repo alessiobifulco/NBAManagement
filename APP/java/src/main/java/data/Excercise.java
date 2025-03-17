@@ -13,6 +13,5 @@ public class Excercise {
         this.name = name;
         this.fundamentals = fundamentals;
         this.intensity = intensity;
-        this.idExcercise = idExcercise++;
     }
 }
