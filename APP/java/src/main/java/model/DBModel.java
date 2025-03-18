@@ -18,6 +18,26 @@ public class DBModel implements Model {
         this.connection = connection;
     }
 
+    @Override
+    public ResultSet executeQuery(String query, Object... params) throws SQLException {
+        PreparedStatement stmt = connection.prepareStatement(query);
+        for (int i = 0; i < params.length; i++) {
+            stmt.setObject(i + 1, params[i]);
+        }
+        return stmt.executeQuery();
+    }
+
+    @Override
+    public int executeUpdate(String query, Object... params) throws SQLException {
+        try (PreparedStatement stmt = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
+            for (int i = 0; i < params.length; i++) {
+                stmt.setObject(i + 1, params[i]);
+            }
+            int affectedRows = stmt.executeUpdate();
+            return affectedRows;
+        }
+    }
+
     // Funzione per ottenere la rosa di una squadra
     @Override
     public List<Player> getTeamRoster(int idTeam) throws SQLException {

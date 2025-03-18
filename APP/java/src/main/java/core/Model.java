@@ -4,6 +4,7 @@ import data.*;
 import model.DBModel;
 
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -86,5 +87,9 @@ public interface Model {
     void removeObserverByNameAndSurname(String name, String surname) throws SQLException;
 
     void removeCoachByNameAndSurname(String name, String surname) throws SQLException;
+
+    ResultSet executeQuery(String query, Object... params) throws SQLException;
+
+    int executeUpdate(String query, Object... params) throws SQLException;
 
 }
