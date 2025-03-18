@@ -32,7 +32,7 @@ public class TeamPage extends JFrame {
         // Bottone per Staff (Gestione dello staff)
         JButton staffButton = new JButton("Staff");
         staffButton.addActionListener(e -> {
-            new StaffPage(jFrame, model);  // Passa alla pagina Staff
+            new StaffPage(jFrame, model, idTeam);  // Passa alla pagina Staff
             dispose();
         });
 
