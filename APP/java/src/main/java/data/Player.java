@@ -8,7 +8,7 @@ public class Player {
     public enum Position {PG, SG, SF, PF, C};
     int age;
     Position position;
-    public enum Category {Superstar, AllStar, Bench, RolePlayer};
+    public enum Category {Superstar, AllStar, BenchPlayer, RolePlayer};
     Category category;
     int rank;
     int experience;
@@ -89,5 +89,13 @@ public class Player {
 
     public void setFreeAgent(boolean freeAgent) {
         this.freeAgent = freeAgent;
+    }
+
+    public int getAge() {
+        return age;
+    }
+
+    public void setAge(int age) {
+        this.age = age;
     }
 }

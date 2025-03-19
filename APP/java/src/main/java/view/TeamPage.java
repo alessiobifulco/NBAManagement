@@ -39,7 +39,7 @@ public class TeamPage extends JFrame {
         // Bottone per Trade (Proposte di scambio)
         JButton tradeButton = new JButton("Trade");
         tradeButton.addActionListener(e -> {
-            new TradePage(jFrame, model);  // Passa alla pagina Trade
+            new TradePage(jFrame, model, idTeam);  // Passa alla pagina Trade
             dispose();
         });
 

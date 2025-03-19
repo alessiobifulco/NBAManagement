@@ -44,9 +44,10 @@ CREATE TABLE GIOCATORE (
     nome VARCHAR(255) NOT NULL,
     cognome VARCHAR(255) NOT NULL,
     position ENUM('PG', 'SG', 'SF', 'PF', 'C') NOT NULL,
-    categoria ENUM('Superstar', 'All-Star', 'Role Player', 'Bench Player') NOT NULL,
+    categoria ENUM('Superstar', 'AllStar', 'RolePlayer', 'BenchPlayer') NOT NULL,
     valutazione DECIMAL(3, 1) NOT NULL,
     anni_esperienza INT NOT NULL,
+    eta INT NOT NULL,
     freeagent BOOLEAN NOT NULL DEFAULT FALSE
 );
 
