@@ -56,8 +56,8 @@ public class StaffPage extends JFrame {
     }
 
     private void goBackToTeamPage() {
-        this.dispose();
         new TeamPage(parentFrame, model, idTeam);
+        this.dispose();
     }
 
     private void showTrainingSetup() {
@@ -201,9 +201,8 @@ public class StaffPage extends JFrame {
     }
 
     private void backToBaseView() {
-
-        this.dispose();
         new StaffPage(parentFrame, model, idTeam);
+        this.dispose();
     }
 
     private void showObserverView() {
