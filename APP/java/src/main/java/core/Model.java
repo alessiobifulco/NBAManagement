@@ -92,4 +92,22 @@ public interface Model {
 
     int executeUpdate(String query, Object... params) throws SQLException;
 
+    List<String> getSortedPlayers(String teamName, String sortOption) throws SQLException;
+
+    List<String> getExpiringContractsForTeam(String teamName) throws SQLException;
+
+    List<String> getAllTeams() throws SQLException;
+
+    Player getPlayerById(int idPlayer);
+
+    List<Player> getPlayersByTeam(int idTeam) ;
+
+    List<Team> getTeamsExcludingLogged(int idLoggedTeam) ;
+
+    List<Player> getPlayersSortedByPosition(int idTeam);
+
+    List<Player> getPlayersSortedByAge(int idTeam);
+
+    List<Player> getPlayersSortedByRating(int idTeam);
+
 }

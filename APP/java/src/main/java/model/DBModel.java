@@ -475,7 +475,246 @@ public class DBModel implements Model {
             throw new SQLException("Error removing coach: " + ex.getMessage(), ex);
         }
     }
-    
-    
+
+    @Override
+    public List<String> getAllTeams() throws SQLException {
+        List<String> teams = new ArrayList<>();
+        String query = "SELECT nome FROM SQUADRA"; // Usa il nome della tua tabella
+        try (Statement stmt = connection.createStatement();
+                ResultSet rs = stmt.executeQuery(query)) {
+            while (rs.next()) {
+                teams.add(rs.getString("nome"));
+            }
+        }
+        return teams;
+    }
+
+    @Override
+    public List<String> getExpiringContractsForTeam(String teamName) throws SQLException {
+        List<String> contracts = new ArrayList<>();
+        String query = "SELECT g.nome, g.cognome, c.data, c.durata FROM CONTRATTO c " +
+                "JOIN GIOCATORE g ON c.idGiocatore = g.idGiocatore " +
+                "JOIN SQUADRA s ON c.idSquadra = s.idSquadra " +
+                "WHERE s.nome = ? AND DATEDIFF(c.data, CURDATE()) <= 365";
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setString(1, teamName);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    contracts.add(rs.getString("g.nome") + " " + rs.getString("g.cognome") +
+                            " - " + rs.getDate("c.data") + " (Durata: " + rs.getInt("c.durata") + " anni)");
+                }
+            }
+        }
+        return contracts;
+    }
+
+    @Override
+    public List<String> getSortedPlayers(String teamName, String sortOption) throws SQLException {
+        List<String> players = new ArrayList<>();
+        String query = "";
+        switch (sortOption) {
+            case "Sort by Evaluation":
+                query = "SELECT g.nome, g.cognome FROM GIOCATORE g " +
+                        "JOIN CONTRATTO c ON c.idGiocatore = g.idGiocatore " +
+                        "JOIN SQUADRA s ON c.idSquadra = s.idSquadra " +
+                        "WHERE s.nome = ? ORDER BY g.valutazione DESC";
+                break;
+            case "Sort by Age":
+                query = "SELECT g.nome, g.cognome FROM GIOCATORE g " +
+                        "JOIN CONTRATTO c ON c.idGiocatore = g.idGiocatore " +
+                        "JOIN SQUADRA s ON c.idSquadra = s.idSquadra " +
+                        "WHERE s.nome = ? ORDER BY g.eta ASC";
+                break;
+            case "Sort by Role":
+                query = "SELECT g.nome, g.cognome FROM GIOCATORE g " +
+                        "JOIN CONTRATTO c ON c.idGiocatore = g.idGiocatore " +
+                        "JOIN SQUADRA s ON c.idSquadra = s.idSquadra " +
+                        "WHERE s.nome = ? ORDER BY g.categoria";
+                break;
+        }
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setString(1, teamName);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    players.add(rs.getString("g.nome") + " " + rs.getString("g.cognome"));
+                }
+            }
+        }
+        return players;
+    }
+
+    @Override
+    public List<Team> getTeamsExcludingLogged(int idLoggedTeam) {
+        List<Team> teams = new ArrayList<>();
+        String query = "SELECT * FROM SQUADRA WHERE idSquadra != ?";
+
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setInt(1, idLoggedTeam);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                Team team = new Team(
+                        rs.getString("nome"),
+                        rs.getString("citta"),
+                        rs.getInt("idGM"),
+                        rs.getInt("idAllenatore"),
+                        rs.getInt("idOsservatore"),
+                        rs.getInt("n_giocatori"),
+                        rs.getInt("max_salariale"));
+                team.setIdTeam(rs.getInt("idSquadra")); // Assegna manualmente l'id
+                teams.add(team);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return teams;
+    }
+
+    @Override
+    public List<Player> getPlayersByTeam(int idTeam) {
+        List<Player> players = new ArrayList<>();
+        String query = "SELECT g.* FROM GIOCATORE g " +
+                "JOIN CONTRATTO c ON c.idGiocatore = g.idGiocatore " +
+                "WHERE c.idSquadra = ?";
+
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setInt(1, idTeam);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                Player player = new Player(
+                        rs.getString("nome"),
+                        rs.getString("cognome"),
+                        rs.getInt("eta"),
+                        Player.Position.valueOf(rs.getString("position")),
+                        Player.Category.valueOf(rs.getString("categoria")),
+                        rs.getInt("valutazione"),
+                        rs.getInt("anni_esperienza"),
+                        rs.getBoolean("freeagent"));
+                player.setIdPlayer(rs.getInt("idGiocatore"));
+                players.add(player);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return players;
+    }
+
+    @Override
+    public Player getPlayerById(int idPlayer) {
+        String query = "SELECT * FROM GIOCATORE WHERE idGiocatore = ?";
+
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setInt(1, idPlayer);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                Player player = new Player(
+                        rs.getString("nome"),
+                        rs.getString("cognome"),
+                        rs.getInt("eta"),
+                        Player.Position.valueOf(rs.getString("position")),
+                        Player.Category.valueOf(rs.getString("categoria")),
+                        rs.getInt("valutazione"),
+                        rs.getInt("anni_esperienza"),
+                        rs.getBoolean("freeagent"));
+                player.setIdPlayer(rs.getInt("idGiocatore"));
+                return player;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    @Override
+    public List<Player> getPlayersSortedByRating(int idTeam) {
+        List<Player> players = new ArrayList<>();
+        String query = "SELECT g.* FROM GIOCATORE g " +
+                "JOIN CONTRATTO c ON c.idGiocatore = g.idGiocatore " +
+                "WHERE c.idSquadra = ? ORDER BY g.valutazione DESC";
+
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setInt(1, idTeam);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                Player player = new Player(
+                        rs.getString("nome"),
+                        rs.getString("cognome"),
+                        rs.getInt("eta"),
+                        Player.Position.valueOf(rs.getString("position")),
+                        Player.Category.valueOf(rs.getString("categoria")),
+                        rs.getInt("valutazione"),
+                        rs.getInt("anni_esperienza"),
+                        rs.getBoolean("freeagent"));
+                player.setIdPlayer(rs.getInt("idGiocatore"));
+                players.add(player);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return players;
+    }
+
+    @Override
+    public List<Player> getPlayersSortedByAge(int idTeam) {
+        List<Player> players = new ArrayList<>();
+        String query = "SELECT g.* FROM GIOCATORE g " +
+                "JOIN CONTRATTO c ON c.idGiocatore = g.idGiocatore " +
+                "WHERE c.idSquadra = ? ORDER BY g.eta ASC";
+
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setInt(1, idTeam);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                Player player = new Player(
+                        rs.getString("nome"),
+                        rs.getString("cognome"),
+                        rs.getInt("eta"),
+                        Player.Position.valueOf(rs.getString("position")),
+                        Player.Category.valueOf(rs.getString("categoria")),
+                        rs.getInt("valutazione"),
+                        rs.getInt("anni_esperienza"),
+                        rs.getBoolean("freeagent"));
+                player.setIdPlayer(rs.getInt("idGiocatore"));
+                players.add(player);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return players;
+    }
+
+    @Override
+    public List<Player> getPlayersSortedByPosition(int idTeam) {
+        List<Player> players = new ArrayList<>();
+        String query = "SELECT g.* FROM GIOCATORE g " +
+                "JOIN CONTRATTO c ON c.idGiocatore = g.idGiocatore " +
+                "WHERE c.idSquadra = ? ORDER BY FIELD(g.position, 'PG', 'SG', 'SF', 'PF', 'C')";
+
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setInt(1, idTeam);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                Player player = new Player(
+                        rs.getString("nome"),
+                        rs.getString("cognome"),
+                        rs.getInt("eta"),
+                        Player.Position.valueOf(rs.getString("position")),
+                        Player.Category.valueOf(rs.getString("categoria")),
+                        rs.getInt("valutazione"),
+                        rs.getInt("anni_esperienza"),
+                        rs.getBoolean("freeagent"));
+                player.setIdPlayer(rs.getInt("idGiocatore"));
+                players.add(player);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return players;
+    }
 
 }
