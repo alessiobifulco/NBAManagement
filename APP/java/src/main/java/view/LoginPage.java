@@ -16,10 +16,15 @@ public class LoginPage {
     public LoginPage(JFrame mainFrame, Model model) {
         this.frame = mainFrame;
         this.model = model;
+        frame.setTitle("NBA Management System");
+        frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        
         initializeComponents();
     }
 
     private void initializeComponents() {
+        
         // Creazione del pannello principale
         JPanel loginPanel = new JPanel();
         loginPanel.setLayout(new GridBagLayout());
