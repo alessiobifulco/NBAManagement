@@ -3,12 +3,14 @@ package model;
 import data.*;
 
 import java.sql.*;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
 import core.Model;
 
+@SuppressWarnings("unused")
 public class DBModel implements Model {
 
     private final Connection connection;
@@ -881,6 +883,98 @@ public class DBModel implements Model {
                     return null; // Se non trovato, restituisci null
                 }
             }
+        }
+    }
+
+    @Override
+    public List<Trade> getTradesInProgress(int idTeam) throws SQLException {
+        String query = "SELECT t.idScambio, t.idContratto1, t.idContratto2, t.risultato, t.data " +
+                "FROM SCAMBIO t " +
+                "JOIN CONTRATTO c1 ON c1.idContratto = t.idContratto1 " +
+                "JOIN CONTRATTO c2 ON c2.idContratto = t.idContratto2 " +
+                "WHERE (c1.idSquadra = ? OR c2.idSquadra = ?) " +
+                "AND t.risultato = 'In corso'";
+
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            // Impostiamo l'id della squadra (idTeam) sia per il primo che per il secondo
+            // contratto
+            stmt.setInt(1, idTeam);
+            stmt.setInt(2, idTeam);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                List<Trade> tradesInProgress = new ArrayList<>();
+
+                while (rs.next()) {
+                    int idTrade = rs.getInt("idScambio");
+                    int idContract1 = rs.getInt("idContratto1");
+                    int idContract2 = rs.getInt("idContratto2");
+                    LocalDate date = rs.getDate("data").toLocalDate();
+
+                    // Aggiungiamo il trade in corso alla lista
+                    tradesInProgress.add(new Trade(idContract1, idContract2, Trade.State.In_Corso, date));
+                }
+
+                return tradesInProgress;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw e; // Rilancia l'eccezione in caso di errore
+        }
+    }
+
+    @Override
+    public void acceptTrade(Trade selectedTrade) throws SQLException {
+        String updateTradeQuery = "UPDATE SCAMBIO SET risultato = 'Accettato' WHERE idScambio = ?";
+        String updateContractQuery = "UPDATE CONTRATTO SET stato = false WHERE idContratto = ?";
+        String insertNewContractQuery = "INSERT INTO CONTRATTO (idSquadra, idGiocatore, data, durata, stipendio, stato) "
+                +
+                "SELECT ?, idGiocatore, data, durata, stipendio, true FROM CONTRATTO WHERE idContratto = ?";
+
+        try (PreparedStatement updateTradeStmt = connection.prepareStatement(updateTradeQuery);
+                PreparedStatement updateContractStmt = connection.prepareStatement(updateContractQuery);
+                PreparedStatement insertNewContractStmt = connection.prepareStatement(insertNewContractQuery)) {
+
+            // 1. Aggiorna lo stato dello scambio su "Accettato"
+            updateTradeStmt.setInt(1, selectedTrade.getIdTrade());
+            updateTradeStmt.executeUpdate();
+
+            // 2. Disattiva il contratto del primo giocatore (idContratto1)
+            updateContractStmt.setInt(1, selectedTrade.getIdContract1());
+            updateContractStmt.executeUpdate();
+
+            // 3. Disattiva il contratto del secondo giocatore (idContratto2)
+            updateContractStmt.setInt(1, selectedTrade.getIdContract2());
+            updateContractStmt.executeUpdate();
+
+            // 4. Crea un nuovo contratto per il primo giocatore con la nuova squadra
+            // (scambiando gli idSquadra)
+            insertNewContractStmt.setInt(1, selectedTrade.getIdContract2()); // Nuova squadra per il primo giocatore
+            insertNewContractStmt.setInt(2, selectedTrade.getIdContract1());
+            insertNewContractStmt.executeUpdate();
+
+            // 5. Crea un nuovo contratto per il secondo giocatore con la nuova squadra
+            // (scambiando gli idSquadra)
+            insertNewContractStmt.setInt(1, selectedTrade.getIdContract1()); // Nuova squadra per il secondo giocatore
+            insertNewContractStmt.setInt(2, selectedTrade.getIdContract2());
+            insertNewContractStmt.executeUpdate();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw e; // Rilancia l'eccezione se qualcosa va storto
+        }
+    }
+
+    @Override
+    public void rejectTrade(Trade selectedTrade) throws SQLException {
+        String updateTradeQuery = "UPDATE SCAMBIO SET risultato = 'Rifiutato' WHERE idScambio = ?";
+
+        try (PreparedStatement stmt = connection.prepareStatement(updateTradeQuery)) {
+            // 1. Imposta lo stato dello scambio su "Rifiutato"
+            stmt.setInt(1, selectedTrade.getIdTrade());
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw e; // Rilancia l'eccezione in caso di errore
         }
     }
 

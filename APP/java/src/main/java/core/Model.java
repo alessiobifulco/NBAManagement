@@ -121,7 +121,7 @@ public interface Model {
 
     Contract getContractByPlayerId(int idPlayer) throws SQLException;
 
-    List<Trade> getTradesInProgress(int idTeam);
+    List<Trade> getTradesInProgress(int idTeam) throws SQLException;
 
     void acceptTrade(Trade selectedTrade) throws SQLException;
 

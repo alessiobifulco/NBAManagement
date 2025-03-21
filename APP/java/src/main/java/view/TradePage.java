@@ -42,7 +42,6 @@ public class TradePage extends JFrame {
         proposeTradeButton.addActionListener(e -> openTradeProposalWindow());
         updateTradeButton.addActionListener(e -> openUpdateTradeWindow());
 
-
         goBackButton.addActionListener(e -> {
             new TeamPage(jFrame, model, idTeam);
             dispose();
@@ -267,7 +266,67 @@ public class TradePage extends JFrame {
                 .setEnabled(playerToTradeBox.getSelectedItem() != null && playerForTradeBox.getSelectedItem() != null);
     }
 
-   private void openUpdateTradeWindow() {
-        
+    private void openUpdateTradeWindow() {
+        JDialog updateDialog = new JDialog(this, "Update Trade", true);
+        updateDialog.setSize(new Dimension(600, 400));
+        updateDialog.setLayout(new BorderLayout());
+
+        DefaultListModel<Trade> tradeListModel = new DefaultListModel<>();
+
+        try {
+            List<Trade> tradesInProgress = model.getTradesInProgress(idTeam);
+            tradesInProgress.forEach(tradeListModel::addElement);
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Error fetching trades: " + e.getMessage(), "Error",
+                    JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
+        }
+
+        JList<Trade> tradeList = new JList<>(tradeListModel);
+        JScrollPane scrollPane = new JScrollPane(tradeList);
+
+        JButton acceptButton = new JButton("Accept");
+        JButton rejectButton = new JButton("Reject");
+        JButton cancelButton = new JButton("Cancel");
+
+        acceptButton.addActionListener(e -> {
+            Trade selectedTrade = tradeList.getSelectedValue();
+            if (selectedTrade != null) {
+                try {
+                    model.acceptTrade(selectedTrade);
+                    JOptionPane.showMessageDialog(updateDialog, "Trade accepted!");
+                    updateDialog.dispose();
+                } catch (SQLException ex) {
+                    JOptionPane.showMessageDialog(updateDialog, "Error accepting trade: " + ex.getMessage(), "Error",
+                            JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        });
+
+        rejectButton.addActionListener(e -> {
+            Trade selectedTrade = tradeList.getSelectedValue();
+            if (selectedTrade != null) {
+                try {
+                    model.rejectTrade(selectedTrade);
+                    JOptionPane.showMessageDialog(updateDialog, "Trade rejected!");
+                    updateDialog.dispose();
+                } catch (SQLException ex) {
+                    JOptionPane.showMessageDialog(updateDialog, "Error rejecting trade: " + ex.getMessage(), "Error",
+                            JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        });
+
+        cancelButton.addActionListener(e -> updateDialog.dispose());
+
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.add(acceptButton);
+        buttonPanel.add(rejectButton);
+        buttonPanel.add(cancelButton);
+
+        updateDialog.add(scrollPane, BorderLayout.CENTER);
+        updateDialog.add(buttonPanel, BorderLayout.SOUTH);
+
+        updateDialog.setVisible(true);
     }
 }
