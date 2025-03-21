@@ -38,34 +38,6 @@ public class DBModel implements Model {
         }
     }
 
-    // Funzione per ottenere la rosa di una squadra
-    @Override
-    public List<Player> getTeamRoster(int idTeam) throws SQLException {
-        List<Player> players = new ArrayList<>();
-        String sql = "SELECT G.idGiocatore, G.nome, G.cognome, G.position, G.categoria, G.valutazione, G.freeagent " +
-                "FROM GIOCATORE G " +
-                "JOIN CONTRATTO C ON G.idGiocatore = C.idGiocatore " +
-                "WHERE C.idSquadra = ? AND C.stato = TRUE";
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setInt(1, idTeam);
-            ResultSet rs = stmt.executeQuery();
-            while (rs.next()) {
-                Player player = new Player(
-                        rs.getString("nome"),
-                        rs.getString("cognome"),
-                        rs.getInt("age"),
-                        Player.Position.valueOf(rs.getString("position")),
-                        Player.Category.valueOf(rs.getString("categoria")),
-                        rs.getInt("rank"),
-                        rs.getInt("expereince"),
-                        rs.getBoolean("freeagent"));
-                player.setIdPlayer(rs.getInt("idGiocatore"));
-                players.add(player);
-            }
-        }
-        return players;
-    }
-
     // Funzione per cercare free agent
     @Override
     public List<Player> getFreeAgents() throws SQLException {
@@ -99,17 +71,6 @@ public class DBModel implements Model {
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setInt(1, idContract1);
             stmt.setInt(2, idContract2);
-            stmt.executeUpdate();
-        }
-    }
-
-    // Funzione per aggiornare lo stato di uno scambio
-    @Override
-    public void updateTradeStatus(int idScambio, String status) throws SQLException {
-        String sql = "UPDATE SCAMBIO SET risultato = ? WHERE idScambio = ?";
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setString(1, status);
-            stmt.setInt(2, idScambio);
             stmt.executeUpdate();
         }
     }
@@ -715,6 +676,212 @@ public class DBModel implements Model {
             e.printStackTrace();
         }
         return players;
+    }
+
+    @Override
+    public List<Trade> getTradesByTeam(int idTeam) {
+        List<Trade> trades = new ArrayList<>();
+        String query = "SELECT s.* FROM SCAMBIO s " +
+                "JOIN CONTRATTO c1 ON s.idContratto1 = c1.idContratto " +
+                "JOIN CONTRATTO c2 ON s.idContratto2 = c2.idContratto " +
+                "WHERE c1.idSquadra = ? OR c2.idSquadra = ?";
+
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setInt(1, idTeam);
+            stmt.setInt(2, idTeam);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                Trade trade = new Trade(
+                        rs.getInt("idContratto1"),
+                        rs.getInt("idContratto2"),
+                        Trade.State.valueOf(rs.getString("risultato").replace(" ", "")), // Converte ENUM dal DB
+                        rs.getDate("data").toLocalDate());
+                trade.setIdTrade(rs.getInt("idScambio"));
+                trades.add(trade);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return trades;
+    }
+
+    @Override
+    public void updateTradeStatus(int idScambio, String status) throws SQLException {
+        String query = "UPDATE SCAMBIO SET risultato = ? WHERE idScambio = ?";
+
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setString(1, status);
+            stmt.setInt(2, idScambio);
+            stmt.executeUpdate();
+        }
+    }
+
+    public void proposeTrade(Player playerToTrade, Player selectedPlayerForTrade, Team selectedTeam)
+            throws SQLException {
+        // Query per recuperare l'ID della squadra associata al giocatore
+        String getTeamQuery = "SELECT idSquadra FROM CONTRATTO WHERE idGiocatore = ? AND stato = TRUE";
+
+        try (PreparedStatement stmt = connection.prepareStatement(getTeamQuery)) {
+            stmt.setInt(1, playerToTrade.getIdPlayer());
+            ResultSet resultSet = stmt.executeQuery();
+
+            if (resultSet.next()) {
+                int playerTeamId = resultSet.getInt("idSquadra");
+
+                String tradeQuery = "INSERT INTO SCAMBIO (idContratto1, idContratto2, risultato, data) "
+                        + "VALUES (?, ?, ?, ?)";
+
+                try (PreparedStatement tradeStmt = connection.prepareStatement(tradeQuery)) {
+                    String getContractQuery = "SELECT idContratto FROM CONTRATTO WHERE idGiocatore = ? AND idSquadra = ? AND stato = TRUE";
+                    try (PreparedStatement contractStmt = connection.prepareStatement(getContractQuery)) {
+                        contractStmt.setInt(1, playerToTrade.getIdPlayer());
+                        contractStmt.setInt(2, playerTeamId);
+                        ResultSet contractResult = contractStmt.executeQuery();
+                        int contract1Id = (contractResult.next()) ? contractResult.getInt("idContratto") : -1;
+
+                        contractStmt.setInt(1, selectedPlayerForTrade.getIdPlayer());
+                        contractStmt.setInt(2, selectedTeam.getIdTeam());
+                        contractResult = contractStmt.executeQuery();
+                        int contract2Id = (contractResult.next()) ? contractResult.getInt("idContratto") : -1;
+
+                        if (contract1Id != -1 && contract2Id != -1) {
+                            tradeStmt.setInt(1, contract1Id);
+                            tradeStmt.setInt(2, contract2Id);
+                            tradeStmt.setString(3, "In corso");
+                            tradeStmt.setDate(4, new java.sql.Date(System.currentTimeMillis()));
+                            tradeStmt.executeUpdate();
+                        } else {
+                            throw new SQLException("One of the contracts is not found or not active.");
+                        }
+                    }
+                }
+            } else {
+                throw new SQLException("The player does not have an active contract.");
+            }
+        } catch (SQLException e) {
+            throw new SQLException("Error while proposing the trade", e);
+        }
+    }
+
+    @Override
+    public List<Player> getTeamRoster(int idTeam) throws SQLException {
+        List<Player> teamRoster = new ArrayList<>();
+        String query = "SELECT G.idGiocatore, G.nome, G.cognome, G.position, G.categoria, G.valutazione, G.anni_esperienza, G.eta, G.freeagent "
+                + "FROM GIOCATORE G "
+                + "JOIN CONTRATTO C ON G.idGiocatore = C.idGiocatore "
+                + "WHERE C.idSquadra = ? AND C.stato = TRUE";
+
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setInt(1, idTeam);
+
+            ResultSet resultSet = stmt.executeQuery();
+
+            while (resultSet.next()) {
+                int idPlayer = resultSet.getInt("idGiocatore");
+                String name = resultSet.getString("nome");
+                String surname = resultSet.getString("cognome");
+                String positionStr = resultSet.getString("position");
+                String categoryStr = resultSet.getString("categoria");
+                int rank = resultSet.getInt("valutazione");
+                int experience = resultSet.getInt("anni_esperienza");
+                int age = resultSet.getInt("eta");
+                boolean freeAgent = resultSet.getBoolean("freeagent");
+
+                Player.Position position = Player.Position.valueOf(positionStr);
+                Player.Category category = Player.Category.valueOf(categoryStr);
+                Player player = new Player(name, surname, age, position, category, rank, experience, freeAgent);
+                player.setIdPlayer(idPlayer);
+
+                teamRoster.add(player);
+            }
+        } catch (SQLException e) {
+            throw new SQLException("Error while retrieving team roster", e);
+        }
+
+        return teamRoster;
+    }
+
+    @Override
+    public Team getTeamByPlayerId(int idPlayer) throws SQLException {
+        // Query per ottenere la squadra del giocatore
+        String query = "SELECT S.* FROM SQUADRA S " +
+                "JOIN CONTRATTO C ON S.idSquadra = C.idSquadra " +
+                "WHERE C.idGiocatore = ?";
+
+        // Esegui la query
+        try (PreparedStatement statement = connection.prepareStatement(query)) {
+            statement.setInt(1, idPlayer); // Passa l'ID del giocatore
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next()) {
+                    // Crea un oggetto Team dalla risposta
+                    Team team = new Team(
+                            resultSet.getString("nome"),
+                            resultSet.getString("citta"),
+                            resultSet.getInt("idGM"),
+                            resultSet.getInt("idAllenatore"),
+                            resultSet.getInt("idOsservatore"),
+                            resultSet.getInt("n_giocatori"),
+                            resultSet.getInt("max_salariale"));
+                    // Imposta l'ID della squadra
+                    team.setIdTeam(resultSet.getInt("idSquadra"));
+                    return team;
+                } else {
+                    return null; // Se non trovata, restituisci null
+                }
+            }
+        }
+    }
+
+    public Contract getContractByPlayerId(int idPlayer) throws SQLException {
+        // Query per ottenere il contratto del giocatore tramite l'idPlayer
+        String query = "SELECT * FROM CONTRATTO WHERE idGiocatore = ?";
+
+        try (PreparedStatement statement = connection.prepareStatement(query)) {
+            statement.setInt(1, idPlayer); // Passa l'ID del giocatore
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next()) {
+                    // Crea un oggetto Contract dalla risposta
+                    return new Contract(
+                            resultSet.getInt("idGiocatore"),
+                            resultSet.getInt("idSquadra"),
+                            resultSet.getInt("stipendio"),
+                            resultSet.getDate("dataInizio").toLocalDate(), // Conversione da java.sql.Date a LocalDate
+                            resultSet.getInt("anni"),
+                            resultSet.getBoolean("stato") // Se lo stato è booleano
+                    );
+                } else {
+                    return null; // Se non trovato, restituisci null
+                }
+            }
+        }
+    }
+
+    public Team getTeamByContract(Contract playerToTradeContract) throws SQLException {
+        // Query per ottenere la squadra tramite l'idSquadra nel contratto
+        String query = "SELECT S.* FROM SQUADRA S WHERE S.idSquadra = ?";
+
+        try (PreparedStatement statement = connection.prepareStatement(query)) {
+            statement.setInt(1, playerToTradeContract.getIdTeam()); // Passa l'idSquadra dal contratto
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next()) {
+                    // Crea un oggetto Team dalla risposta
+                    Team team = new Team(
+                            resultSet.getString("nome"),
+                            resultSet.getString("citta"),
+                            resultSet.getInt("idGM"),
+                            resultSet.getInt("idAllenatore"),
+                            resultSet.getInt("idOsservatore"),
+                            resultSet.getInt("n_giocatori"),
+                            resultSet.getInt("max_salariale"));
+                    team.setIdTeam(resultSet.getInt("idSquadra")); // Imposta l'idSquadra
+                    return team;
+                } else {
+                    return null; // Se non trovato, restituisci null
+                }
+            }
+        }
     }
 
 }

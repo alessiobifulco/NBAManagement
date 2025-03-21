@@ -60,8 +60,7 @@ CREATE TABLE SQUADRA (
     idAllenatore INT,
     idOsservatore INT,
     n_giocatori INT NOT NULL,
-    max_salariale DECIMAL(15, 2) NOT NULL,
-    conference BOOLEAN NOT NULL DEFAULT FALSE,
+    max_salariale INT NOT NULL,
     FOREIGN KEY (idGM) REFERENCES GM(idGM) ON DELETE SET NULL,
     FOREIGN KEY (idAllenatore) REFERENCES ALLENATORE(idAllenatore) ON DELETE SET NULL,
     FOREIGN KEY (idOsservatore) REFERENCES OSSERVATORE(idOsservatore) ON DELETE SET NULL

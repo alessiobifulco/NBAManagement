@@ -100,14 +100,31 @@ public interface Model {
 
     Player getPlayerById(int idPlayer);
 
-    List<Player> getPlayersByTeam(int idTeam) ;
+    List<Player> getPlayersByTeam(int idTeam);
 
-    List<Team> getTeamsExcludingLogged(int idLoggedTeam) ;
+    List<Team> getTeamsExcludingLogged(int idLoggedTeam);
 
     List<Player> getPlayersSortedByPosition(int idTeam);
 
     List<Player> getPlayersSortedByAge(int idTeam);
 
     List<Player> getPlayersSortedByRating(int idTeam);
+
+    List<Trade> getTradesByTeam(int idTeam);
+
+    void proposeTrade(Player playerToTrade, Player selectedPlayerForTrade, Team selectedTeam) throws SQLException;
+
+    // Aggiungi questo metodo all'interfaccia Model
+    Team getTeamByPlayerId(int idPlayer) throws SQLException;
+
+    Team getTeamByContract(Contract playerToTradeContract) throws SQLException;
+
+    Contract getContractByPlayerId(int idPlayer) throws SQLException;
+
+    List<Trade> getTradesInProgress(int idTeam);
+
+    void acceptTrade(Trade selectedTrade) throws SQLException;
+
+    void rejectTrade(Trade selectedTrade) throws SQLException;
 
 }
