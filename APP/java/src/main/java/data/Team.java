@@ -57,6 +57,11 @@ public class Team {
         this.idTeam = idTeam;
     }
 
+    @Override
+    public String toString() {
+        return name + " (" + city + ")";
+    }
+
 
 
 }
