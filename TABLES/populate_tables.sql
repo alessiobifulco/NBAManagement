@@ -56,12 +56,12 @@ INSERT INTO OSSERVATORE (nome, cognome, stipendio, anni_esperienza, free) VALUES
 ('Patrick', 'Ewing', 850000.00, 15, TRUE); -- Osservatore senza squadra
 
 -- Inserimento dati nella tabella SQUADRA
-INSERT INTO SQUADRA (nome, citta, idGM, idAllenatore, idOsservatore, n_giocatori, max_salariale, conference) VALUES
-('Los Angeles Lakers', 'Los Angeles', 1, 1, 1, 14, 120000000.00, TRUE), -- Lakers (Conference Ovest)
-('Golden State Warriors', 'San Francisco', 2, 3, 3, 15, 130000000.00, TRUE), -- Warriors (Conference Ovest)
-('Phoenix Suns', 'Phoenix', 3, 5, 5, 13, 110000000.00, TRUE), -- Suns (Conference Ovest)
-('Los Angeles Clippers', 'Los Angeles', 4, 7, 7, 12, 115000000.00, TRUE), -- Clippers (Conference Ovest)
-('Sacramento Kings', 'Sacramento', 5, 9, 9, 14, 125000000.00, TRUE); -- Kings (Conference Ovest)
+INSERT INTO SQUADRA (nome, citta, idGM, idAllenatore, idOsservatore, n_giocatori, max_salariale) VALUES
+('Los Angeles Lakers', 'Los Angeles', 1, 1, 1, 14, 120000000.00), -- Lakers (Conference Ovest)
+('Golden State Warriors', 'San Francisco', 2, 3, 3, 15, 130000000.00), -- Warriors (Conference Ovest)
+('Phoenix Suns', 'Phoenix', 3, 5, 5, 13, 110000000.00), -- Suns (Conference Ovest)
+('Los Angeles Clippers', 'Los Angeles', 4, 7, 7, 12, 115000000.00), -- Clippers (Conference Ovest)
+('Sacramento Kings', 'Sacramento', 5, 9, 9, 14, 125000000.00); -- Kings (Conference Ovest)
 
 -- Inserimento dati nella tabella STADIO
 INSERT INTO STADIO (capacita, citta, idSquadra) VALUES
@@ -192,17 +192,17 @@ INSERT INTO CONTRATTO (idSquadra, idGiocatore, data, durata, stipendio, stato) V
 (1, 1, '2020-12-03', 4, 40000000.00, TRUE), -- LeBron James
 (1, 2, '2020-12-03', 5, 35000000.00, TRUE), -- Anthony Davis
 (1, 3, '2021-08-06', 2, 44000000.00, TRUE), -- Russell Westbrook
-(1, 4, '2021-08-03', 1, 2600000.00, FALSE), -- Carmelo Anthony (scaduto)
-(1, 5, '2021-08-03', 1, 2600000.00, FALSE), -- Dwight Howard (scaduto)
+(1, 4, '2021-08-03', 1, 2600000.00, TRUE), -- Carmelo Anthony (scaduto)
+(1, 5, '2021-08-03', 1, 2600000.00, TRUE), -- Dwight Howard (scaduto)
 (1, 6, '2021-08-03', 2, 1400000.00, TRUE), -- Austin Reaves
 (1, 7, '2021-08-03', 3, 9500000.00, TRUE), -- Talen Horton-Tucker
 (1, 8, '2021-08-03', 2, 5000000.00, TRUE), -- Kendrick Nunn
-(1, 9, '2021-08-03', 1, 1800000.00, FALSE), -- Malik Monk (scaduto)
-(1, 10, '2021-08-03', 1, 2600000.00, FALSE), -- Stanley Johnson (scaduto)
-(1, 11, '2021-08-03', 1, 2600000.00, FALSE), -- Wayne Ellington (scaduto)
-(1, 12, '2021-08-03', 1, 2600000.00, FALSE), -- Trevor Ariza (scaduto)
-(1, 13, '2021-08-03', 1, 2600000.00, FALSE), -- Kent Bazemore (scaduto)
-(1, 14, '2021-08-03', 1, 2600000.00, FALSE), -- DeAndre Jordan (scaduto)
+(1, 9, '2021-08-03', 1, 1800000.00, TRUE), -- Malik Monk (scaduto)
+(1, 10, '2021-08-03', 1, 2600000.00, TRUE), -- Stanley Johnson (scaduto)
+(1, 11, '2021-08-03', 1, 2600000.00, TRUE), -- Wayne Ellington (scaduto)
+(1, 12, '2021-08-03', 1, 2600000.00, TRUE), -- Trevor Ariza (scaduto)
+(1, 13, '2021-08-03', 1, 2600000.00, TRUE), -- Kent Bazemore (scaduto)
+(1, 14, '2021-08-03', 1, 2600000.00, TRUE), -- DeAndre Jordan (scaduto)
 -- Warriors
 (2, 15, '2021-08-03', 4, 45000000.00, TRUE), -- Stephen Curry
 (2, 16, '2019-07-01', 5, 38000000.00, TRUE), -- Klay Thompson
@@ -215,10 +215,10 @@ INSERT INTO CONTRATTO (idSquadra, idGiocatore, data, durata, stipendio, stato) V
 (2, 23, '2021-08-03', 3, 5000000.00, TRUE), -- Kevon Looney
 (2, 24, '2021-08-03', 2, 2400000.00, TRUE), -- Otto Porter Jr.
 (2, 25, '2021-08-03', 2, 2000000.00, TRUE), -- Gary Payton II
-(2, 26, '2021-08-03', 1, 2600000.00, FALSE), -- Andre Iguodala (scaduto)
-(2, 27, '2021-08-03', 1, 2600000.00, FALSE), -- Nemanja Bjelica (scaduto)
-(2, 28, '2021-08-03', 1, 2600000.00, FALSE), -- Juan Toscano-Anderson (scaduto)
-(2, 29, '2021-08-03', 1, 2600000.00, FALSE), -- Damion Lee (scaduto)
+(2, 26, '2021-08-03', 1, 2600000.00, TRUE), -- Andre Iguodala (scaduto)
+(2, 27, '2021-08-03', 1, 2600000.00, TRUE), -- Nemanja Bjelica (scaduto)
+(2, 28, '2021-08-03', 1, 2600000.00, TRUE), -- Juan Toscano-Anderson (scaduto)
+(2, 29, '2021-08-03', 1, 2600000.00, TRUE), -- Damion Lee (scaduto)
 -- Suns
 (3, 30, '2021-08-03', 4, 35000000.00, TRUE), -- Devin Booker
 (3, 31, '2021-08-03', 4, 30000000.00, TRUE), -- Chris Paul
@@ -229,10 +229,10 @@ INSERT INTO CONTRATTO (idSquadra, idGiocatore, data, durata, stipendio, stato) V
 (3, 36, '2021-08-03', 3, 5000000.00, TRUE), -- Landry Shamet
 (3, 37, '2021-08-03', 2, 5000000.00, TRUE), -- JaVale McGee
 (3, 38, '2021-08-03', 2, 5000000.00, TRUE), -- Cameron Payne
-(3, 39, '2021-08-03', 1, 2600000.00, FALSE), -- Abdel Nader (scaduto)
-(3, 40, '2021-08-03', 1, 2600000.00, FALSE), -- Elfrid Payton (scaduto)
-(3, 41, '2021-08-03', 1, 2600000.00, FALSE), -- Frank Kaminsky (scaduto)
-(3, 42, '2021-08-03', 1, 2600000.00, FALSE), -- Ish Wainright (scaduto)
+(3, 39, '2021-08-03', 1, 2600000.00, TRUE), -- Abdel Nader (scaduto)
+(3, 40, '2021-08-03', 1, 2600000.00, TRUE), -- Elfrid Payton (scaduto)
+(3, 41, '2021-08-03', 1, 2600000.00, TRUE), -- Frank Kaminsky (scaduto)
+(3, 42, '2021-08-03', 1, 2600000.00, TRUE), -- Ish Wainright (scaduto)
 -- Clippers
 (4, 43, '2021-08-03', 4, 40000000.00, TRUE), -- Paul George
 (4, 44, '2021-08-03', 4, 35000000.00, TRUE), -- Kawhi Leonard
@@ -242,10 +242,10 @@ INSERT INTO CONTRATTO (idSquadra, idGiocatore, data, durata, stipendio, stato) V
 (4, 48, '2021-08-03', 3, 5000000.00, TRUE), -- Luke Kennard
 (4, 49, '2021-08-03', 2, 5000000.00, TRUE), -- Nicolas Batum
 (4, 50, '2021-08-03', 2, 5000000.00, TRUE), -- Terance Mann
-(4, 51, '2021-08-03', 1, 2600000.00, FALSE), -- Amir Coffey (scaduto)
-(4, 52, '2021-08-03', 1, 2600000.00, FALSE), -- Isaiah Hartenstein (scaduto)
-(4, 53, '2021-08-03', 1, 2600000.00, FALSE), -- Brandon Boston Jr. (scaduto)
-(4, 54, '2021-08-03', 1, 2600000.00, FALSE), -- Jason Preston (scaduto)
+(4, 51, '2021-08-03', 1, 2600000.00, TRUE), -- Amir Coffey (scaduto)
+(4, 52, '2021-08-03', 1, 2600000.00, TRUE), -- Isaiah Hartenstein (scaduto)
+(4, 53, '2021-08-03', 1, 2600000.00, TRUE), -- Brandon Boston Jr. (scaduto)
+(4, 54, '2021-08-03', 1, 2600000.00, TRUE), -- Jason Preston (scaduto)
 -- Kings
 (5, 55, '2021-08-03', 4, 30000000.00, TRUE), -- De'Aaron Fox
 (5, 56, '2021-08-03', 4, 25000000.00, TRUE), -- Domantas Sabonis
@@ -257,10 +257,10 @@ INSERT INTO CONTRATTO (idSquadra, idGiocatore, data, durata, stipendio, stato) V
 (5, 62, '2021-08-03', 3, 5000000.00, TRUE), -- Marvin Bagley III
 (5, 63, '2021-08-03', 2, 5000000.00, TRUE), -- Tristan Thompson
 (5, 64, '2021-08-03', 2, 5000000.00, TRUE), -- Alex Len
-(5, 65, '2021-08-03', 1, 2600000.00, FALSE), -- Maurice Harkless (scaduto)
-(5, 66, '2021-08-03', 1, 2600000.00, FALSE), -- Chimezie Metu (scaduto)
-(5, 67, '2021-08-03', 1, 2600000.00, FALSE), -- Terence Davis (scaduto)
-(5, 68, '2021-08-03', 1, 2600000.00, FALSE); -- Neemias Queta (scaduto)
+(5, 65, '2021-08-03', 1, 2600000.00, TRUE), -- Maurice Harkless (scaduto)
+(5, 66, '2021-08-03', 1, 2600000.00, TRUE), -- Chimezie Metu (scaduto)
+(5, 67, '2021-08-03', 1, 2600000.00, TRUE), -- Terence Davis (scaduto)
+(5, 68, '2021-08-03', 1, 2600000.00, TRUE); -- Neemias Queta (scaduto)
 
 -- Inserimento dati nella tabella SCAMBIO
 -- 15 scambi (4 rifiutati, 4 accettati, 5 in corso)

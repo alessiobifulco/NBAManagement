@@ -220,10 +220,12 @@ public class TradePage extends JFrame {
                         "Confirm Trade", JOptionPane.OK_CANCEL_OPTION);
                 if (confirmation == JOptionPane.OK_OPTION) {
                     try {
+                        System.out.println("QUA CI ARRIVO");
                         model.proposeTrade(playerToTrade, playerForTrade, selectedTeam);
                         JOptionPane.showMessageDialog(tradeDialog, "Trade proposal submitted!");
                         tradeDialog.dispose();
                     } catch (SQLException ex) {
+                        System.out.println("PERO FINISCO QUA");
                         JOptionPane.showMessageDialog(tradeDialog, "Error proposing trade: " + ex.getMessage(), "Error",
                                 JOptionPane.ERROR_MESSAGE);
                     }

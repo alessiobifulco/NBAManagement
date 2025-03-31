@@ -722,45 +722,49 @@ public class DBModel implements Model {
 
     public void proposeTrade(Player playerToTrade, Player selectedPlayerForTrade, Team selectedTeam)
             throws SQLException {
-        // Query per recuperare l'ID della squadra associata al giocatore
         String getTeamQuery = "SELECT idSquadra FROM CONTRATTO WHERE idGiocatore = ? AND stato = TRUE";
-
         try (PreparedStatement stmt = connection.prepareStatement(getTeamQuery)) {
             stmt.setInt(1, playerToTrade.getIdPlayer());
-            ResultSet resultSet = stmt.executeQuery();
+            try (ResultSet resultSet = stmt.executeQuery()) {
+                if (resultSet.next()) {
+                    int playerTeamId = resultSet.getInt("idSquadra");
 
-            if (resultSet.next()) {
-                int playerTeamId = resultSet.getInt("idSquadra");
-
-                String tradeQuery = "INSERT INTO SCAMBIO (idContratto1, idContratto2, risultato, data) "
-                        + "VALUES (?, ?, ?, ?)";
-
-                try (PreparedStatement tradeStmt = connection.prepareStatement(tradeQuery)) {
+                    // Recupero del contratto del primo giocatore
                     String getContractQuery = "SELECT idContratto FROM CONTRATTO WHERE idGiocatore = ? AND idSquadra = ? AND stato = TRUE";
-                    try (PreparedStatement contractStmt = connection.prepareStatement(getContractQuery)) {
-                        contractStmt.setInt(1, playerToTrade.getIdPlayer());
-                        contractStmt.setInt(2, playerTeamId);
-                        ResultSet contractResult = contractStmt.executeQuery();
-                        int contract1Id = (contractResult.next()) ? contractResult.getInt("idContratto") : -1;
+                    int contract1Id, contract2Id;
 
-                        contractStmt.setInt(1, selectedPlayerForTrade.getIdPlayer());
-                        contractStmt.setInt(2, selectedTeam.getIdTeam());
-                        contractResult = contractStmt.executeQuery();
-                        int contract2Id = (contractResult.next()) ? contractResult.getInt("idContratto") : -1;
+                    try (PreparedStatement contractStmt1 = connection.prepareStatement(getContractQuery)) {
+                        contractStmt1.setInt(1, playerToTrade.getIdPlayer());
+                        contractStmt1.setInt(2, playerTeamId);
+                        try (ResultSet contractResult1 = contractStmt1.executeQuery()) {
+                            contract1Id = (contractResult1.next()) ? contractResult1.getInt("idContratto") : -1;
+                        }
+                    }
 
-                        if (contract1Id != -1 && contract2Id != -1) {
+                    // Recupero del contratto del secondo giocatore
+                    try (PreparedStatement contractStmt2 = connection.prepareStatement(getContractQuery)) {
+                        contractStmt2.setInt(1, selectedPlayerForTrade.getIdPlayer());
+                        contractStmt2.setInt(2, selectedTeam.getIdTeam());
+                        try (ResultSet contractResult2 = contractStmt2.executeQuery()) {
+                            contract2Id = (contractResult2.next()) ? contractResult2.getInt("idContratto") : -1;
+                        }
+                    }
+
+                    if (contract1Id != -1 && contract2Id != -1) {
+                        String tradeQuery = "INSERT INTO SCAMBIO (idContratto1, idContratto2, risultato, data) VALUES (?, ?, ?, ?)";
+                        try (PreparedStatement tradeStmt = connection.prepareStatement(tradeQuery)) {
                             tradeStmt.setInt(1, contract1Id);
                             tradeStmt.setInt(2, contract2Id);
                             tradeStmt.setString(3, "In corso");
                             tradeStmt.setDate(4, new java.sql.Date(System.currentTimeMillis()));
                             tradeStmt.executeUpdate();
-                        } else {
-                            throw new SQLException("One of the contracts is not found or not active.");
                         }
+                    } else {
+                        throw new SQLException("One of the contracts is not found or not active.");
                     }
+                } else {
+                    throw new SQLException("The player does not have an active contract.");
                 }
-            } else {
-                throw new SQLException("The player does not have an active contract.");
             }
         } catch (SQLException e) {
             throw new SQLException("Error while proposing the trade", e);
