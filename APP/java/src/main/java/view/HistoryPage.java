@@ -2,124 +2,130 @@ package view;
 
 import core.Model;
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.sql.SQLException;
 import java.util.List;
 
-@SuppressWarnings("unused")
-
 public class HistoryPage extends JFrame {
+    private final Model model;
+    private final int idTeam;
 
-    private Model model;
-    private int idTeam;
-
-
-    public HistoryPage(JFrame jFrame, Model model, int idTeam) {
+    public HistoryPage(JFrame parentFrame, Model model, int idTeam) {
         this.model = model;
         this.idTeam = idTeam;
+        initializeUI(parentFrame);
+    }
 
-        setTitle("History");
+    private void initializeUI(JFrame parentFrame) {
+        setTitle("Team History - " + idTeam);
         setExtendedState(JFrame.MAXIMIZED_BOTH);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        setLayout(new BorderLayout());
 
-        // Creiamo un JTabbedPane per i vari storici
         JTabbedPane tabbedPane = new JTabbedPane();
 
-        // Tab per lo storico degli allenamenti
-        JPanel trainingPanel = new JPanel();
-        JTextArea trainingHistoryArea = new JTextArea(20, 50);
-        trainingHistoryArea.setEditable(false);
-        JScrollPane trainingScrollPane = new JScrollPane(trainingHistoryArea);
-        trainingPanel.add(trainingScrollPane);
+        // Training History Tab
+        JPanel trainingPanel = createHistoryTab("Training");
         tabbedPane.addTab("Training", trainingPanel);
-        loadTrainingHistory(idTeam, trainingHistoryArea);
+        loadTrainingHistory(idTeam, (JTextArea)((JScrollPane)trainingPanel.getComponent(1)).getViewport().getView());
 
-        // Tab per lo storico degli scambi
-        JPanel tradePanel = new JPanel();
-        JTextArea tradeHistoryArea = new JTextArea(20, 50);
-        tradeHistoryArea.setEditable(false);
-        JScrollPane tradeScrollPane = new JScrollPane(tradeHistoryArea);
-        tradePanel.add(tradeScrollPane);
+        // Trade History Tab
+        JPanel tradePanel = createHistoryTab("Trades");
         tabbedPane.addTab("Trades", tradePanel);
-        loadTradeHistory(idTeam, tradeHistoryArea);
+        loadTradeHistory(idTeam, (JTextArea)((JScrollPane)tradePanel.getComponent(1)).getViewport().getView());
 
-        // Tab per lo storico delle partite
-        JPanel gamePanel = new JPanel();
-        JTextArea gameHistoryArea = new JTextArea(20, 50);
-        gameHistoryArea.setEditable(false);
-        JScrollPane gameScrollPane = new JScrollPane(gameHistoryArea);
-        gamePanel.add(gameScrollPane);
+        // Game History Tab
+        JPanel gamePanel = createHistoryTab("Games");
         tabbedPane.addTab("Games", gamePanel);
-        loadMatchHistory(idTeam, gameHistoryArea);
+        loadMatchHistory(idTeam, (JTextArea)((JScrollPane)gamePanel.getComponent(1)).getViewport().getView());
 
-        // Tab per lo storico dei contratti
-        JPanel contractPanel = new JPanel();
-        JTextArea contractHistoryArea = new JTextArea(20, 50);
-        contractHistoryArea.setEditable(false);
-        JScrollPane contractScrollPane = new JScrollPane(contractHistoryArea);
-        contractPanel.add(contractScrollPane);
+        // Contract History Tab
+        JPanel contractPanel = createHistoryTab("Contracts");
         tabbedPane.addTab("Contracts", contractPanel);
-        loadContractHistory(idTeam, contractHistoryArea);
+        loadContractHistory(idTeam, (JTextArea)((JScrollPane)contractPanel.getComponent(1)).getViewport().getView());
 
-        // Bottone di ritorno
+        // Back Button
         JButton backButton = new JButton("Back to Team");
         backButton.addActionListener(e -> {
-            new TeamPage(jFrame, model, idTeam);
-            dispose(); // Chiude la finestra della HistoryPage
+            new TeamPage(parentFrame, model, idTeam);
+            dispose();
         });
 
-        // Aggiungiamo il TabbedPane e il bottone
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.add(backButton);
+
         add(tabbedPane, BorderLayout.CENTER);
-        add(backButton, BorderLayout.SOUTH);
+        add(buttonPanel, BorderLayout.SOUTH);
 
         setVisible(true);
     }
 
-    // Funzione per caricare lo storico degli allenamenti
-    private void loadTrainingHistory(int idTeam, JTextArea trainingHistoryArea) {
+    private JPanel createHistoryTab(String title) {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setBorder(new EmptyBorder(10, 10, 10, 10));
+
+        JTextArea historyArea = new JTextArea();
+        historyArea.setEditable(false);
+        historyArea.setLineWrap(true);
+        historyArea.setWrapStyleWord(true);
+
+        JScrollPane scrollPane = new JScrollPane(historyArea);
+        panel.add(new JLabel(title + " History:"), BorderLayout.NORTH);
+        panel.add(scrollPane, BorderLayout.CENTER);
+
+        return panel;
+    }
+
+    private void loadTrainingHistory(int idTeam, JTextArea area) {
         try {
-            List<String> trainingHistory = model.getTrainingHistory(idTeam);
-            for (String record : trainingHistory) {
-                trainingHistoryArea.append(record + "\n");
+            List<String> history = model.getTrainingHistory(idTeam);
+            if (history.isEmpty()) {
+                area.setText("No training history available");
+            } else {
+                history.forEach(record -> area.append("• " + record + "\n\n"));
             }
         } catch (SQLException e) {
-            trainingHistoryArea.setText("Error loading training history: " + e.getMessage());
+            area.setText("Error loading training history:\n" + e.getMessage());
         }
     }
 
-    // Funzione per caricare lo storico degli scambi
-    private void loadTradeHistory(int idTeam, JTextArea tradeHistoryArea) {
+    private void loadTradeHistory(int idTeam, JTextArea area) {
         try {
-            List<String> tradeHistory = model.getTradeHistory(idTeam);
-            for (String record : tradeHistory) {
-                tradeHistoryArea.append(record + "\n");
+            List<String> history = model.getTradeHistory(idTeam);
+            if (history.isEmpty()) {
+                area.setText("No trade history available");
+            } else {
+                history.forEach(record -> area.append("- " + record + "\n\n"));
             }
         } catch (SQLException e) {
-            tradeHistoryArea.setText("Error loading trade history: " + e.getMessage());
+            area.setText("Error loading trade history:\n" + e.getMessage());
         }
     }
 
-    // Funzione per caricare lo storico delle partite
-    private void loadMatchHistory(int idTeam, JTextArea gameHistoryArea) {
+    private void loadMatchHistory(int idTeam, JTextArea area) {
         try {
-            List<String> matchHistory = model.getMatchHistory(idTeam);
-            for (String record : matchHistory) {
-                gameHistoryArea.append(record + "\n");
+            List<String> history = model.getMatchHistory(idTeam);
+            if (history.isEmpty()) {
+                area.setText("No match history available");
+            } else {
+                history.forEach(record -> area.append("• " + record + "\n\n"));
             }
         } catch (SQLException e) {
-            gameHistoryArea.setText("Error loading match history: " + e.getMessage());
+            area.setText("Error loading match history:\n" + e.getMessage());
         }
     }
 
-    // Funzione per caricare lo storico dei contratti
-    private void loadContractHistory(int idTeam, JTextArea contractHistoryArea) {
+    private void loadContractHistory(int idTeam, JTextArea area) {
         try {
-            List<String> contractHistory = model.getContractHistory(idTeam);
-            for (String record : contractHistory) {
-                contractHistoryArea.append(record + "\n");
+            List<String> history = model.getContractHistory(idTeam);
+            if (history.isEmpty()) {
+                area.setText("No contract history available");
+            } else {
+                history.forEach(record -> area.append("- " + record + "\n\n"));
             }
         } catch (SQLException e) {
-            contractHistoryArea.setText("Error loading contract history: " + e.getMessage());
+            area.setText("Error loading contract history:\n" + e.getMessage());
         }
     }
 }
