@@ -94,8 +94,6 @@ public interface Model {
 
     List<String> getSortedPlayers(String teamName, String sortOption) throws SQLException;
 
-    List<String> getExpiringContractsForTeam(String teamName) throws SQLException;
-
     List<String> getAllTeams() throws SQLException;
 
     Player getPlayerById(int idPlayer);
@@ -104,13 +102,13 @@ public interface Model {
 
     List<Team> getTeamsExcludingLogged(int idLoggedTeam);
 
-    List<Player> getPlayersSortedByPosition(int idTeam);
+    List<Player> getPlayersSortedByPosition(int idTeam) throws SQLException;
 
-    List<Player> getPlayersSortedByAge(int idTeam);
+    List<Player> getPlayersSortedByAge(int idTeam) throws SQLException;
 
-    List<Player> getPlayersSortedByRating(int idTeam);
+    List<Player> getPlayersSortedByRating(int idTeam) throws SQLException;
 
-    List<Trade> getTradesByTeam(int idTeam);
+    List<Trade> getTradesByTeam(int idTeam) throws SQLException;
 
     void proposeTrade(Player playerToTrade, Player selectedPlayerForTrade, Team selectedTeam) throws SQLException;
 
@@ -123,8 +121,20 @@ public interface Model {
 
     List<Trade> getTradesInProgress(int idTeam) throws SQLException;
 
-    void acceptTrade(Trade selectedTrade) throws SQLException;
+    List<Player> getActivePlayersByTeam(int idTeam) throws SQLException;
 
-    void rejectTrade(Trade selectedTrade) throws SQLException;
+    Contract getActiveContract(int idPlayer) throws SQLException;
+
+    Team getTeamById(int idTeam) throws SQLException;
+
+    List<Player> getExpiringContracts(int idTeam) throws SQLException;
+
+    void proposeTrade(int idContract, int idContract2 ) throws SQLException;
+
+    void acceptTrade(int idTrade) throws SQLException;
+
+    void rejectTrade(int idTrade) throws SQLException;
+
+    Contract getContractById(int idContract) throws SQLException;
 
 }
