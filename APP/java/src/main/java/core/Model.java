@@ -14,34 +14,8 @@ public interface Model {
         return new DBModel(connection);
     }
 
-    // Funzione per ottenere la rosa di una squadra
-    List<Player> getTeamRoster(int idTeam) throws SQLException;
-
-    // Funzione per cercare free agent
-    List<Player> getFreeAgents() throws SQLException;
-
-    // Funzione per creare una proposta di scambio
-    void createTradeProposal(int idContract1, int idContract2) throws SQLException;
-
-    // Funzione per aggiornare lo stato di uno scambio
-    void updateTradeStatus(int idScambio, String status) throws SQLException;
-
-    // Funzione per ottenere i contratti in scadenza
-    List<Contract> getExpiringContracts() throws SQLException;
-
     // Funzione per registrare l'accesso di un GM
     boolean registerGMAccess(String email, String password) throws SQLException;
-
-    // Funzione per aggiungere un contratto a una squadra
-    void addContractToTeam(int idPlayer, int idTeam, int salary, int years) throws SQLException;
-
-    // Funzione per pianificare un allenamento
-    void scheduleTraining(int idCoach, int idPlayer, int duration, String focus) throws SQLException;
-
-    // Funzione per aggiungere esercizi all'allenamento
-    void addExerciseToTraining(int idTraining, int idExercise, int series) throws SQLException;
-
-    // Nuovi metodi aggiunti
 
     // Funzione per aggiungere un giocatore
     void addPlayer(String nome, String cognome, String position, String categoria,
@@ -92,13 +66,7 @@ public interface Model {
 
     int executeUpdate(String query, Object... params) throws SQLException;
 
-    List<String> getSortedPlayers(String teamName, String sortOption) throws SQLException;
-
-    List<String> getAllTeams() throws SQLException;
-
     Player getPlayerById(int idPlayer);
-
-    List<Player> getPlayersByTeam(int idTeam);
 
     List<Team> getTeamsExcludingLogged(int idLoggedTeam);
 
@@ -108,16 +76,7 @@ public interface Model {
 
     List<Player> getPlayersSortedByRating(int idTeam) throws SQLException;
 
-    List<Trade> getTradesByTeam(int idTeam) throws SQLException;
-
     void proposeTrade(Player playerToTrade, Player selectedPlayerForTrade, Team selectedTeam) throws SQLException;
-
-    // Aggiungi questo metodo all'interfaccia Model
-    Team getTeamByPlayerId(int idPlayer) throws SQLException;
-
-    Team getTeamByContract(Contract playerToTradeContract) throws SQLException;
-
-    Contract getContractByPlayerId(int idPlayer) throws SQLException;
 
     List<Trade> getTradesInProgress(int idTeam) throws SQLException;
 
@@ -129,7 +88,7 @@ public interface Model {
 
     List<Player> getExpiringContracts(int idTeam) throws SQLException;
 
-    void proposeTrade(int idContract, int idContract2 ) throws SQLException;
+    void proposeTrade(int idContract, int idContract2) throws SQLException;
 
     void acceptTrade(int idTrade) throws SQLException;
 

@@ -10,7 +10,6 @@ import java.util.Objects;
 
 import core.Model;
 
-@SuppressWarnings("unused")
 public class DBModel implements Model {
 
     private final Connection connection;
@@ -40,44 +39,6 @@ public class DBModel implements Model {
         }
     }
 
-    // Funzione per cercare free agent
-    @Override
-    public List<Player> getFreeAgents() throws SQLException {
-        List<Player> freeAgents = new ArrayList<>();
-        String sql = "SELECT idGiocatore, nome, cognome, position, categoria, valutazione " +
-                "FROM GIOCATORE WHERE freeagent = TRUE";
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            ResultSet rs = stmt.executeQuery();
-            while (rs.next()) {
-                Player player = new Player(
-                        rs.getString("nome"),
-                        rs.getString("cognome"),
-                        rs.getInt("age"),
-                        Player.Position.valueOf(rs.getString("position")),
-                        Player.Category.valueOf(rs.getString("categoria")),
-                        rs.getInt("rank"),
-                        rs.getInt("expereince"),
-                        rs.getBoolean("freeagent"));
-                player.setIdPlayer(rs.getInt("idGiocatore"));
-                freeAgents.add(player);
-            }
-        }
-        return freeAgents;
-    }
-
-    // Funzione per creare una proposta di scambio
-    @Override
-    public void createTradeProposal(int idContract1, int idContract2) throws SQLException {
-        String sql = "INSERT INTO SCAMBIO (idContratto1, idContratto2, risultato, data) " +
-                "VALUES (?, ?, 'In corso', NOW())";
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setInt(1, idContract1);
-            stmt.setInt(2, idContract2);
-            stmt.executeUpdate();
-        }
-    }
-
-    // Funzione per visualizzare lo storico delle partite
     @Override
     public List<String> getMatchHistory(int idTeam) throws SQLException {
         List<String> history = new ArrayList<>();
@@ -91,44 +52,17 @@ public class DBModel implements Model {
             stmt.setInt(2, idTeam);
             ResultSet rs = stmt.executeQuery();
 
-            int count = 0; // Contatore per vedere quante righe vengono restituite
             while (rs.next()) {
                 history.add(rs.getString("data") + " - " +
                         rs.getString("risultato") + " - " +
                         rs.getString("squadra_casa") + " vs " +
                         rs.getString("squadra_ospite"));
-                count++;
             }
 
-            System.out.println("Number of matches found: " + count); // Stampa del conteggio
         }
         return history;
     }
 
-    // Funzione per ottenere i contratti in scadenza
-    @Override
-    public List<Contract> getExpiringContracts() throws SQLException {
-        List<Contract> contracts = new ArrayList<>();
-        String sql = "SELECT C.idContratto, C.idGiocatore, C.idSquadra, C.stipendio, C.data, C.durata, C.stato " +
-                "FROM CONTRATTO C WHERE C.stato = TRUE AND C.durata = 1";
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            ResultSet rs = stmt.executeQuery();
-            while (rs.next()) {
-                Contract contract = new Contract(
-                        rs.getInt("idGiocatore"),
-                        rs.getInt("idSquadra"),
-                        rs.getInt("stipendio"),
-                        rs.getDate("data").toLocalDate(),
-                        rs.getInt("durata"),
-                        rs.getBoolean("stato"));
-                contract.setIdContract(rs.getInt("idContratto"));
-                contracts.add(contract);
-            }
-        }
-        return contracts;
-    }
-
-    // Funzione per registrare l'accesso di un GM
     @Override
     public boolean registerGMAccess(String email, String password) {
         String sql = "SELECT idGM FROM GM WHERE mail = ? AND password = ? AND idGM IN (SELECT idGM FROM SQUADRA)";
@@ -156,46 +90,6 @@ public class DBModel implements Model {
 
         }
         return false; // Login fallito
-    }
-
-    // Funzione per aggiungere un contratto a una squadra
-    @Override
-    public void addContractToTeam(int idPlayer, int idTeam, int salary, int years) throws SQLException {
-        String sql = "INSERT INTO CONTRATTO (idSquadra, idGiocatore, data, durata, stipendio, stato) " +
-                "VALUES (?, ?, NOW(), ?, ?, TRUE)";
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setInt(1, idTeam);
-            stmt.setInt(2, idPlayer);
-            stmt.setInt(3, years);
-            stmt.setInt(4, salary);
-            stmt.executeUpdate();
-        }
-    }
-
-    // Funzione per pianificare un allenamento
-    @Override
-    public void scheduleTraining(int idCoach, int idPlayer, int duration, String focus) throws SQLException {
-        String sql = "INSERT INTO ALLENAMENTO (idAllenatore, categoria, idGiocatore, durata, data, focus) " +
-                "VALUES (?, 'Gruppo', ?, ?, NOW(), ?)";
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setInt(1, idCoach);
-            stmt.setInt(2, idPlayer);
-            stmt.setInt(3, duration);
-            stmt.setString(4, focus);
-            stmt.executeUpdate();
-        }
-    }
-
-    // Funzione per aggiungere esercizi all'allenamento
-    @Override
-    public void addExerciseToTraining(int idTraining, int idExercise, int series) throws SQLException {
-        String sql = "INSERT INTO ESERCIZIO_IN_ALLENAMENTO (idAllenamento, idEsercizio, serie) VALUES (?, ?, ?)";
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setInt(1, idTraining);
-            stmt.setInt(2, idExercise);
-            stmt.setInt(3, series);
-            stmt.executeUpdate();
-        }
     }
 
     @Override
@@ -440,54 +334,6 @@ public class DBModel implements Model {
     }
 
     @Override
-    public List<String> getAllTeams() throws SQLException {
-        List<String> teams = new ArrayList<>();
-        String query = "SELECT nome FROM SQUADRA"; // Usa il nome della tua tabella
-        try (Statement stmt = connection.createStatement();
-                ResultSet rs = stmt.executeQuery(query)) {
-            while (rs.next()) {
-                teams.add(rs.getString("nome"));
-            }
-        }
-        return teams;
-    }
-
-    @Override
-    public List<String> getSortedPlayers(String teamName, String sortOption) throws SQLException {
-        List<String> players = new ArrayList<>();
-        String query = "";
-        switch (sortOption) {
-            case "Sort by Evaluation":
-                query = "SELECT g.nome, g.cognome FROM GIOCATORE g " +
-                        "JOIN CONTRATTO c ON c.idGiocatore = g.idGiocatore " +
-                        "JOIN SQUADRA s ON c.idSquadra = s.idSquadra " +
-                        "WHERE s.nome = ? ORDER BY g.valutazione DESC";
-                break;
-            case "Sort by Age":
-                query = "SELECT g.nome, g.cognome FROM GIOCATORE g " +
-                        "JOIN CONTRATTO c ON c.idGiocatore = g.idGiocatore " +
-                        "JOIN SQUADRA s ON c.idSquadra = s.idSquadra " +
-                        "WHERE s.nome = ? ORDER BY g.eta ASC";
-                break;
-            case "Sort by Role":
-                query = "SELECT g.nome, g.cognome FROM GIOCATORE g " +
-                        "JOIN CONTRATTO c ON c.idGiocatore = g.idGiocatore " +
-                        "JOIN SQUADRA s ON c.idSquadra = s.idSquadra " +
-                        "WHERE s.nome = ? ORDER BY g.categoria";
-                break;
-        }
-        try (PreparedStatement stmt = connection.prepareStatement(query)) {
-            stmt.setString(1, teamName);
-            try (ResultSet rs = stmt.executeQuery()) {
-                while (rs.next()) {
-                    players.add(rs.getString("g.nome") + " " + rs.getString("g.cognome"));
-                }
-            }
-        }
-        return players;
-    }
-
-    @Override
     public List<Team> getTeamsExcludingLogged(int idLoggedTeam) {
         List<Team> teams = new ArrayList<>();
         String query = "SELECT * FROM SQUADRA WHERE idSquadra != ?";
@@ -512,36 +358,6 @@ public class DBModel implements Model {
             e.printStackTrace();
         }
         return teams;
-    }
-
-    @Override
-    public List<Player> getPlayersByTeam(int idTeam) {
-        List<Player> players = new ArrayList<>();
-        String query = "SELECT g.* FROM GIOCATORE g " +
-                "JOIN CONTRATTO c ON c.idGiocatore = g.idGiocatore " +
-                "WHERE c.idSquadra = ?";
-
-        try (PreparedStatement stmt = connection.prepareStatement(query)) {
-            stmt.setInt(1, idTeam);
-            ResultSet rs = stmt.executeQuery();
-
-            while (rs.next()) {
-                Player player = new Player(
-                        rs.getString("nome"),
-                        rs.getString("cognome"),
-                        rs.getInt("eta"),
-                        Player.Position.valueOf(rs.getString("position")),
-                        Player.Category.valueOf(rs.getString("categoria")),
-                        rs.getInt("valutazione"),
-                        rs.getInt("anni_esperienza"),
-                        rs.getBoolean("freeagent"));
-                player.setIdPlayer(rs.getInt("idGiocatore"));
-                players.add(player);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return players;
     }
 
     @Override
@@ -596,95 +412,13 @@ public class DBModel implements Model {
         return trades;
     }
 
-    @Override
-    public void updateTradeStatus(int idScambio, String status) throws SQLException {
-        String query = "UPDATE SCAMBIO SET risultato = ? WHERE idScambio = ?";
-
-        try (PreparedStatement stmt = connection.prepareStatement(query)) {
-            stmt.setString(1, status);
-            stmt.setInt(2, idScambio);
-            stmt.executeUpdate();
-        }
-    }
-
-    @Override
-    public List<Player> getTeamRoster(int idTeam) throws SQLException {
-        List<Player> teamRoster = new ArrayList<>();
-        String query = "SELECT G.idGiocatore, G.nome, G.cognome, G.position, G.categoria, G.valutazione, G.anni_esperienza, G.eta, G.freeagent "
-                + "FROM GIOCATORE G "
-                + "JOIN CONTRATTO C ON G.idGiocatore = C.idGiocatore "
-                + "WHERE C.idSquadra = ? AND C.stato = TRUE";
-
-        try (PreparedStatement stmt = connection.prepareStatement(query)) {
-            stmt.setInt(1, idTeam);
-
-            ResultSet resultSet = stmt.executeQuery();
-
-            while (resultSet.next()) {
-                int idPlayer = resultSet.getInt("idGiocatore");
-                String name = resultSet.getString("nome");
-                String surname = resultSet.getString("cognome");
-                String positionStr = resultSet.getString("position");
-                String categoryStr = resultSet.getString("categoria");
-                int rank = resultSet.getInt("valutazione");
-                int experience = resultSet.getInt("anni_esperienza");
-                int age = resultSet.getInt("eta");
-                boolean freeAgent = resultSet.getBoolean("freeagent");
-
-                Player.Position position = Player.Position.valueOf(positionStr);
-                Player.Category category = Player.Category.valueOf(categoryStr);
-                Player player = new Player(name, surname, age, position, category, rank, experience, freeAgent);
-                player.setIdPlayer(idPlayer);
-
-                teamRoster.add(player);
-            }
-        } catch (SQLException e) {
-            throw new SQLException("Error while retrieving team roster", e);
-        }
-
-        return teamRoster;
-    }
-
-    @Override
-    public Team getTeamByPlayerId(int idPlayer) throws SQLException {
-        // Query per ottenere la squadra del giocatore
-        String query = "SELECT S.* FROM SQUADRA S " +
-                "JOIN CONTRATTO C ON S.idSquadra = C.idSquadra " +
-                "WHERE C.idGiocatore = ?";
-
-        // Esegui la query
-        try (PreparedStatement statement = connection.prepareStatement(query)) {
-            statement.setInt(1, idPlayer); // Passa l'ID del giocatore
-            try (ResultSet resultSet = statement.executeQuery()) {
-                if (resultSet.next()) {
-                    // Crea un oggetto Team dalla risposta
-                    Team team = new Team(
-                            resultSet.getString("nome"),
-                            resultSet.getString("citta"),
-                            resultSet.getInt("idGM"),
-                            resultSet.getInt("idAllenatore"),
-                            resultSet.getInt("idOsservatore"),
-                            resultSet.getInt("n_giocatori"),
-                            resultSet.getInt("max_salariale"));
-                    // Imposta l'ID della squadra
-                    team.setIdTeam(resultSet.getInt("idSquadra"));
-                    return team;
-                } else {
-                    return null; // Se non trovata, restituisci null
-                }
-            }
-        }
-    }
-
     public Contract getContractByPlayerId(int idPlayer) throws SQLException {
-        // Query per ottenere il contratto del giocatore tramite l'idPlayer
         String query = "SELECT * FROM CONTRATTO WHERE idGiocatore = ?";
 
         try (PreparedStatement statement = connection.prepareStatement(query)) {
             statement.setInt(1, idPlayer); // Passa l'ID del giocatore
             try (ResultSet resultSet = statement.executeQuery()) {
                 if (resultSet.next()) {
-                    // Crea un oggetto Contract dalla risposta
                     return new Contract(
                             resultSet.getInt("idGiocatore"),
                             resultSet.getInt("idSquadra"),
