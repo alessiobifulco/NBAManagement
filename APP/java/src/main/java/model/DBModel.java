@@ -93,23 +93,6 @@ public class DBModel implements Model {
     }
 
     @Override
-    public void addPlayer(String nome, String cognome, String position, String categoria,
-            double valutazione, int anniEsperienza) throws SQLException {
-        String sql = "INSERT INTO GIOCATORE (nome, cognome, position, categoria, valutazione, anni_esperienza, freeagent) "
-                +
-                "VALUES (?, ?, ?, ?, ?, ?, FALSE)";
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setString(1, nome);
-            stmt.setString(2, cognome);
-            stmt.setString(3, position);
-            stmt.setString(4, categoria);
-            stmt.setDouble(5, valutazione);
-            stmt.setInt(6, anniEsperienza);
-            stmt.executeUpdate();
-        }
-    }
-
-    @Override
     public void removePlayer(int idGiocatore) throws SQLException {
         String sql = "DELETE FROM GIOCATORE WHERE idGiocatore = ?";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
@@ -119,7 +102,7 @@ public class DBModel implements Model {
     }
 
     @Override
-    public void addCoach(String nome, String cognome, double stipendio, int anniEsperienza) throws SQLException {
+    public void addCoach(String nome, String cognome, double stipendio, int anniEsperienza, boolean free) throws SQLException {
         String sql = "INSERT INTO ALLENATORE (nome, cognome, stipendio, anni_esperienza, free) " +
                 "VALUES (?, ?, ?, ?, FALSE)";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
@@ -141,7 +124,7 @@ public class DBModel implements Model {
     }
 
     @Override
-    public void addObserver(String nome, String cognome, double stipendio, int anniEsperienza) throws SQLException {
+    public void addObserver(String nome, String cognome, double stipendio, int anniEsperienza, boolean free) throws SQLException {
         String sql = "INSERT INTO OSSERVATORE (nome, cognome, stipendio, anni_esperienza, free) " +
                 "VALUES (?, ?, ?, ?, FALSE)";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
@@ -163,7 +146,7 @@ public class DBModel implements Model {
     }
 
     @Override
-    public void addGame(int idSquadra1, int idSquadra2, String risultato) throws SQLException {
+    public void addGame(int idSquadra1, int idSquadra2, String risultato, int stadium, LocalDate data) throws SQLException {
         String sql = "INSERT INTO PARTITA (idSquadra1, idSquadra2, risultato, data) " +
                 "VALUES (?, ?, ?, NOW())";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
@@ -793,6 +776,133 @@ public class DBModel implements Model {
         List<Player> players = getActivePlayersByTeam(idTeam);
         players.sort((p1, p2) -> p1.getPosition().compareTo(p2.getPosition()));
         return players;
+    }
+    @Override
+    public List<Player> getAllPlayers() throws SQLException {
+        List<Player> players = new ArrayList<>();
+        String sql = "SELECT * FROM GIOCATORE";
+        
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            ResultSet rs = stmt.executeQuery();
+            
+            while (rs.next()) {
+                Player player = new Player(
+                    rs.getString("nome"),
+                    rs.getString("cognome"),
+                    rs.getInt("eta"),
+                    Player.Position.valueOf(rs.getString("position")),
+                    Player.Category.valueOf(rs.getString("categoria")),
+                    rs.getInt("valutazione"),
+                    rs.getInt("anni_esperienza"),
+                    rs.getBoolean("freeagent")
+                );
+                player.setIdPlayer(rs.getInt("idGiocatore"));
+                players.add(player);
+            }
+        }
+        return players;
+    }
+    
+    @Override
+    public List<Coach> getAllCoaches() throws SQLException {
+        List<Coach> coaches = new ArrayList<>();
+        String sql = "SELECT * FROM ALLENATORE";
+        
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            ResultSet rs = stmt.executeQuery();
+            
+            while (rs.next()) {
+                Coach coach = new Coach(
+                    rs.getString("nome"),
+                    rs.getString("cognome"),
+                    rs.getInt("stipendio"),
+                    rs.getInt("anni_esperienza"),
+                    rs.getBoolean("free")
+                );
+                coach.setIdCoach(rs.getInt("idAllenatore"));
+                coaches.add(coach);
+            }
+        }
+        return coaches;
+    }
+    
+    @Override
+    public List<Observer> getAllObservers() throws SQLException {
+        List<Observer> observers = new ArrayList<>();
+        String sql = "SELECT * FROM OSSERVATORE";
+        
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            ResultSet rs = stmt.executeQuery();
+            
+            while (rs.next()) {
+                Observer observer = new Observer(
+                    rs.getString("nome"),
+                    rs.getString("cognome"),
+                    rs.getInt("stipendio"),
+                    rs.getInt("anni_esperienza"),
+                    rs.getBoolean("free")
+                );
+                observer.setIdObserver(rs.getInt("idOsservatore"));
+                observers.add(observer);
+            }
+        }
+        return observers;
+    }
+    
+    @Override
+    public List<Game> getAllGames() throws SQLException {
+        List<Game> games = new ArrayList<>();
+        String sql = "SELECT * FROM PARTITA";
+        
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            ResultSet rs = stmt.executeQuery();
+            
+            while (rs.next()) {
+                Game game = new Game(
+                    rs.getInt("idSquadra1"),
+                    rs.getInt("idSquadra2"),
+                    rs.getString("risultato"),
+                    rs.getInt("idStadio"),
+                    rs.getDate("data").toLocalDate()
+                );
+                game.setIdGame(rs.getInt("idPartita"));
+                games.add(game);
+            }
+        }
+        return games;
+    }
+    
+    @Override
+    public void addPlayer(String name, String surname, int age, String position, String category, 
+                         double rating, int experience, boolean freeAgent) throws SQLException {
+        String sql = "INSERT INTO GIOCATORE (nome, cognome, eta, position, categoria, valutazione, anni_esperienza, freeagent) " +
+                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        
+        try (PreparedStatement stmt = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            stmt.setString(1, name);
+            stmt.setString(2, surname);
+            stmt.setInt(3, age);
+            stmt.setString(4, position);
+            stmt.setString(5, category);
+            stmt.setDouble(6, rating);
+            stmt.setInt(7, experience);
+            stmt.setBoolean(8, freeAgent);
+            
+            int affectedRows = stmt.executeUpdate();
+            
+            if (affectedRows == 0) {
+                throw new SQLException("Creating player failed, no rows affected.");
+            }
+            
+            try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
+                if (generatedKeys.next()) {
+                    int id = generatedKeys.getInt(1);
+                    // Puoi restituire l'ID o gestirlo come preferisci
+                } else {
+                    throw new SQLException("Creating player failed, no ID obtained.");
+                }
+            }
+        }
     }
 
 }

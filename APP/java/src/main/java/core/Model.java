@@ -6,6 +6,7 @@ import model.DBModel;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.util.List;
 
 public interface Model {
@@ -17,27 +18,24 @@ public interface Model {
     // Funzione per registrare l'accesso di un GM
     boolean registerGMAccess(String email, String password) throws SQLException;
 
-    // Funzione per aggiungere un giocatore
-    void addPlayer(String nome, String cognome, String position, String categoria,
-            double valutazione, int anniEsperienza) throws SQLException;
 
     // Funzione per rimuovere un giocatore
     void removePlayer(int idGiocatore) throws SQLException;
 
     // Funzione per aggiungere un allenatore
-    void addCoach(String nome, String cognome, double stipendio, int anniEsperienza) throws SQLException;
+    void addCoach(String nome, String cognome, double stipendio, int anniEsperienza, boolean free) throws SQLException;
 
     // Funzione per rimuovere un allenatore
     void removeCoach(int idAllenatore) throws SQLException;
 
     // Funzione per aggiungere un osservatore
-    void addObserver(String nome, String cognome, double stipendio, int anniEsperienza) throws SQLException;
+    void addObserver(String nome, String cognome, double stipendio, int anniEsperienza, boolean free) throws SQLException;
 
     // Funzione per rimuovere un osservatore
     void removeObserver(int idOsservatore) throws SQLException;
 
     // Funzione per aggiungere una partita
-    void addGame(int idSquadra1, int idSquadra2, String risultato) throws SQLException;
+    void addGame(int idSquadra1, int idSquadra2, String risultato, int stadium, LocalDate data) throws SQLException;
 
     // Funzione per rimuovere una partita
     void removeGame(int idPartita) throws SQLException;
@@ -95,5 +93,16 @@ public interface Model {
     void rejectTrade(int idTrade) throws SQLException;
 
     Contract getContractById(int idContract) throws SQLException;
+
+    List<Game> getAllGames() throws SQLException;
+
+    List<Observer> getAllObservers() throws SQLException;
+
+    List<Coach> getAllCoaches() throws SQLException;
+
+    List<Player> getAllPlayers() throws SQLException;
+
+    void addPlayer(String text, String text2, int int1, String string, String string2, double double1, int int2,
+            boolean b) throws SQLException;
 
 }
