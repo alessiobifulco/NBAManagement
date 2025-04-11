@@ -8,12 +8,14 @@ public class Game {
     int idTeam1;
     int idTeam2;
     String result;
+    int stadium;
     LocalDate date;
 
-    public Game(int idTeam1, int idTeam2, String result, LocalDate date) {
+    public Game(int idTeam1, int idTeam2, String result, int stadium, LocalDate date) {
         this.idTeam1 = idTeam1;
         this.idTeam2 = idTeam2;
         this.result = result;
+        this.stadium = stadium;
         this.date = date;
     }
 
@@ -40,6 +42,12 @@ public class Game {
     }
     public void setResult(String result) {
         this.result = result;
+    }
+    public int getStadium() {
+        return stadium;
+    }
+    public void setStadium(int stadium) {
+        this.stadium = stadium;
     }
     public LocalDate getDate() {
         return date;
