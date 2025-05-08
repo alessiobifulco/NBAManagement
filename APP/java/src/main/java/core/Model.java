@@ -18,7 +18,6 @@ public interface Model {
     // Funzione per registrare l'accesso di un GM
     boolean registerGMAccess(String email, String password) throws SQLException;
 
-
     // Funzione per rimuovere un giocatore
     void removePlayer(int idGiocatore) throws SQLException;
 
@@ -29,7 +28,8 @@ public interface Model {
     void removeCoach(int idAllenatore) throws SQLException;
 
     // Funzione per aggiungere un osservatore
-    void addObserver(String nome, String cognome, double stipendio, int anniEsperienza, boolean free) throws SQLException;
+    void addObserver(String nome, String cognome, double stipendio, int anniEsperienza, boolean free)
+            throws SQLException;
 
     // Funzione per rimuovere un osservatore
     void removeObserver(int idOsservatore) throws SQLException;
@@ -73,8 +73,6 @@ public interface Model {
     List<Player> getPlayersSortedByAge(int idTeam) throws SQLException;
 
     List<Player> getPlayersSortedByRating(int idTeam) throws SQLException;
-
-    void proposeTrade(Player playerToTrade, Player selectedPlayerForTrade, Team selectedTeam) throws SQLException;
 
     List<Trade> getTradesInProgress(int idTeam) throws SQLException;
 

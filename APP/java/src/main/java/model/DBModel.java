@@ -474,42 +474,6 @@ public class DBModel implements Model {
     }
 
     @Override
-    public void proposeTrade(Player playerToTrade, Player selectedPlayerForTrade, Team selectedTeam)
-            throws SQLException {
-        // Verifica che i parametri non siano nulli
-        if (playerToTrade == null || selectedPlayerForTrade == null || selectedTeam == null) {
-            throw new IllegalArgumentException("Player and Team parameters cannot be null");
-        }
-
-        // Ottieni i contratti attivi dei giocatori
-        Contract contract1 = getActiveContract(playerToTrade.getIdPlayer());
-        Contract contract2 = getActiveContract(selectedPlayerForTrade.getIdPlayer());
-
-        if (contract1 == null || contract2 == null) {
-            throw new IllegalStateException("Both players must have active contracts");
-        }
-
-        // Verifica che i giocatori non appartengano già alla stessa squadra
-        if (contract1.getIdTeam() == contract2.getIdTeam()) {
-            throw new IllegalStateException("Cannot trade players from the same team");
-        }
-
-        // Verifica che uno dei giocatori appartenga alla squadra selezionata
-        if (contract1.getIdTeam() != selectedTeam.getIdTeam() && contract2.getIdTeam() != selectedTeam.getIdTeam()) {
-            throw new IllegalStateException("At least one player must belong to the selected team");
-        }
-
-        // Crea la proposta di scambio nel database
-        String sql = "INSERT INTO SCAMBIO (idContratto1, idContratto2, risultato, data) VALUES (?, ?, 'In corso', ?)";
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setInt(1, contract1.getIdContract());
-            stmt.setInt(2, contract2.getIdContract());
-            stmt.setDate(3, Date.valueOf(LocalDate.now()));
-            stmt.executeUpdate();
-        }
-    }
-
-    @Override
     public Contract getActiveContract(int idPlayer) throws SQLException {
         String sql = "SELECT * FROM CONTRATTO WHERE idGiocatore = ? AND stato = TRUE";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
@@ -517,13 +481,15 @@ public class DBModel implements Model {
             ResultSet rs = stmt.executeQuery();
 
             if (rs.next()) {
-                return new Contract(
+                Contract contract = new Contract(
                         rs.getInt("idGiocatore"),
                         rs.getInt("idSquadra"),
                         rs.getInt("stipendio"),
                         rs.getDate("data").toLocalDate(),
                         rs.getInt("durata"),
                         rs.getBoolean("stato"));
+                contract.setIdContract(rs.getInt("idContratto")); // Aggiungi questa linea
+                return contract;
             }
             return null;
         }
@@ -549,38 +515,6 @@ public class DBModel implements Model {
                 return team;
             }
             return null;
-        }
-    }
-
-    @Override
-    public void proposeTrade(int idContract, int idContract2) throws SQLException {
-        // Verifica che i contratti siano diversi
-        if (idContract == idContract2) {
-            throw new IllegalArgumentException("Cannot trade the same contract");
-        }
-
-        // Verifica che i contratti esistano e siano attivi
-        if (!isContractActive(idContract) || !isContractActive(idContract2)) {
-            throw new IllegalStateException("Both contracts must be active");
-        }
-
-        // Crea la proposta di scambio nel database
-        String sql = "INSERT INTO SCAMBIO (idContratto1, idContratto2, risultato, data) VALUES (?, ?, 'In corso', ?)";
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setInt(1, idContract);
-            stmt.setInt(2, idContract2);
-            stmt.setDate(3, Date.valueOf(LocalDate.now()));
-            stmt.executeUpdate();
-        }
-    }
-
-    // Metodo helper per verificare se un contratto è attivo
-    private boolean isContractActive(int idContract) throws SQLException {
-        String sql = "SELECT stato FROM CONTRATTO WHERE idContratto = ?";
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setInt(1, idContract);
-            ResultSet rs = stmt.executeQuery();
-            return rs.next() && rs.getBoolean("stato");
         }
     }
 
@@ -937,6 +871,85 @@ public class DBModel implements Model {
                 throw new SQLException("Database constraint violation: Possible duplicate player", e);
             }
             throw e;
+        }
+    }
+
+    @Override
+    public void proposeTrade(int idContract, int idContract2) throws SQLException {
+        // Debug: stampa gli ID contratti ricevuti
+        System.out.println("[DEBUG] Starting proposeTrade with contracts: " + idContract + " and " + idContract2);
+
+        // Verifica che gli ID siano validi
+        if (idContract <= 0 || idContract2 <= 0) {
+            String errorMsg = "Invalid contract IDs. ID1: " + idContract + ", ID2: " + idContract2;
+            System.out.println("[ERROR] " + errorMsg);
+            throw new IllegalArgumentException(errorMsg);
+        }
+
+        // Verifica che i contratti siano diversi
+        if (idContract == idContract2) {
+            String errorMsg = "Cannot trade the same contract. ID: " + idContract;
+            System.out.println("[ERROR] " + errorMsg);
+            throw new IllegalArgumentException(errorMsg);
+        }
+
+        // Verifica che i contratti esistano e siano attivi
+        if (!isContractActive(idContract)) {
+            String errorMsg = "First contract is not active or doesn't exist. ID: " + idContract;
+            System.out.println("[ERROR] " + errorMsg);
+            throw new IllegalStateException(errorMsg);
+        }
+
+        if (!isContractActive(idContract2)) {
+            String errorMsg = "Second contract is not active or doesn't exist. ID: " + idContract2;
+            System.out.println("[ERROR] " + errorMsg);
+            throw new IllegalStateException(errorMsg);
+        }
+
+        // Verifica che i contratti non appartengano alla stessa squadra
+        int idTeam1 = getTeamIdByContract(idContract);
+        int idTeam2 = getTeamIdByContract(idContract2);
+
+        if (idTeam1 == idTeam2) {
+            String errorMsg = "Both contracts belong to the same team. Team ID: " + idTeam1;
+            System.out.println("[ERROR] " + errorMsg);
+            throw new IllegalStateException(errorMsg);
+        }
+
+        // Crea la proposta di scambio nel database
+        String sql = "INSERT INTO SCAMBIO (idContratto1, idContratto2, risultato, data) VALUES (?, ?, 'In corso', ?)";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, idContract);
+            stmt.setInt(2, idContract2);
+            stmt.setDate(3, Date.valueOf(LocalDate.now()));
+
+            int rowsAffected = stmt.executeUpdate();
+            System.out.println("[DEBUG] Trade proposal inserted successfully. Rows affected: " + rowsAffected);
+        } catch (SQLException e) {
+            System.out.println("[ERROR] Database error during trade proposal: " + e.getMessage());
+            throw e;
+        }
+    }
+
+    // Metodi di supporto aggiuntivi
+    private boolean isContractActive(int idContract) throws SQLException {
+        String sql = "SELECT 1 FROM CONTRATTO WHERE idContratto = ? AND stato = TRUE";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, idContract);
+            ResultSet rs = stmt.executeQuery();
+            return rs.next();
+        }
+    }
+
+    private int getTeamIdByContract(int idContract) throws SQLException {
+        String sql = "SELECT idSquadra FROM CONTRATTO WHERE idContratto = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, idContract);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt("idSquadra");
+            }
+            throw new SQLException("Contract not found. ID: " + idContract);
         }
     }
 

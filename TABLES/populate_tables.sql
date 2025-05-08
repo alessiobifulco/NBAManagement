@@ -63,7 +63,7 @@ INSERT INTO GIOCATORE (nome, cognome, position, categoria, valutazione, anni_esp
 ('Anthony', 'Davis', 'PF', 'AllStar', 9.0, 12, 31, False), -- Dallas
 ('Austin', 'Reaves', 'SG', 'RolePlayer', 7.2, 3, 26, FALSE),
 ('Rui', 'Hachimura', 'PF', 'RolePlayer', 7.0, 5, 26, FALSE),
-('D\'Angelo', 'Russell', 'PG', 'RolePlayer', 7.5, 9, 28, TRUE),
+('DAngelo', 'Russell', 'PG', 'RolePlayer', 7.5, 9, 28, TRUE),
 ('Jarred', 'Vanderbilt', 'PF', 'RolePlayer', 7.0, 5, 25, FALSE),
 ('Christian', 'Wood', 'C', 'RolePlayer', 7.3, 8, 29, TRUE),
 ('Jaxson', 'Hayes', 'C', 'BenchPlayer', 6.8, 5, 24, FALSE),
