@@ -79,7 +79,7 @@ public class AdministratorPage extends JFrame {
 
     private JPanel createBackgroundPanel() {
         return new JPanel(new BorderLayout()) {
-            private final Image backgroundImage = new ImageIcon("NBA_Management/IMAGES/opt2.jpg")
+            private final Image backgroundImage = new ImageIcon("NBA_Management/IMAGES/adminPageBackground.jpg")
                     .getImage();
 
             @Override
