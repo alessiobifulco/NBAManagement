@@ -953,4 +953,43 @@ public class DBModel implements Model {
         }
     }
 
+    @Override
+    public Team getTeamByName(String fullName) throws SQLException {
+        if (fullName == null || fullName.trim().isEmpty() || !fullName.contains(" ")) {
+            // Se il nome non è valido o non contiene uno spazio, non può essere "Città Nome"
+            return null;
+        }
+
+        // Divide il nome completo in città e nome della squadra
+        int lastSpaceIndex = fullName.lastIndexOf(' ');
+        String city = fullName.substring(0, lastSpaceIndex).trim();
+        String name = fullName.substring(lastSpaceIndex + 1).trim();
+
+        Team team = null;
+        String sql = "SELECT * FROM team WHERE city = ? AND name = ?";
+
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            pstmt.setString(1, city);
+            pstmt.setString(2, name);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    // Se troviamo una corrispondenza, creiamo un oggetto Team
+                    team = new Team(
+                            rs.getString("name"),
+                            rs.getString("city"),
+                            rs.getInt("idGM"),
+                            rs.getInt("idCoach"),
+                            rs.getInt("idObserver"),
+                            rs.getInt("nPlayers"),
+                            rs.getInt("maxCap")
+                    );
+                    // Impostiamo l'ID della squadra, che non è nel costruttore originale
+                    team.setIdTeam(rs.getInt("idTeam"));
+                }
+            }
+        }
+        return team; // Restituisce l'oggetto team o null se non trovato
+    }
+
 }

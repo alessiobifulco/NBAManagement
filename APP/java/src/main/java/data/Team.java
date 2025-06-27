@@ -9,7 +9,7 @@ public class Team {
     int idObserver;
     int nPlayers;
     int maxCap;
-    int idTeam;
+    int idTeam = -1;
 
     public Team(String name, String city, int idGM, int idCoach, int idObserver, int nPlayers, int maxCap){
         this.name = name;
@@ -19,6 +19,7 @@ public class Team {
         this.idObserver = idObserver;
         this.nPlayers = nPlayers;
         this.maxCap = maxCap;
+        this.idTeam++;
     }
 
     public int getIdTeam(){

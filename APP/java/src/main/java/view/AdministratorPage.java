@@ -3,12 +3,15 @@ package view;
 import core.Model;
 import data.Player;
 import data.Coach;
-import data.Observer;
 import data.Game;
+import data.Team; 
+
 import javax.swing.*;
 import java.awt.*;
 import java.sql.SQLException;
+import java.time.format.DateTimeParseException;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 public class AdministratorPage extends JFrame {
     private final Model model;
@@ -20,51 +23,90 @@ public class AdministratorPage extends JFrame {
 
     private void initializeUI(JFrame parentFrame) {
         setTitle("Administrator");
-        setSize(500, 400);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLayout(new FlowLayout());
         setExtendedState(JFrame.MAXIMIZED_BOTH);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        // Back button to return to the Login page
-        JButton backButton = new JButton("Back to Login");
+        // Pannello principale con BorderLayout e sfondo
+        JPanel mainPanel = createBackgroundPanel();
+        mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+
+        // Pannello del titolo (Nord)
+        JLabel titleLabel = new JLabel("Administrator Dashboard", SwingConstants.CENTER);
+        titleLabel.setFont(new Font(titleLabel.getFont().getName(), Font.BOLD, 24));
+        mainPanel.add(titleLabel, BorderLayout.NORTH);
+
+        // Pannello a sinistra con i bottoni
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.Y_AXIS));
+        buttonPanel.setBorder(BorderFactory.createEmptyBorder(50, 50, 50, 50));
+        buttonPanel.setOpaque(false);
+
+        // Creazione bottoni
+        JButton playerButton = createMenuButton("Manage Players", "Add, remove or edit players");
+        JButton coachButton = createMenuButton("Manage Coaches", "Add, remove or edit coaches");
+        JButton gameButton = createMenuButton("Manage Games", "Add, remove or edit games");
+        JButton backButton = createMenuButton("Back to Login", "Return to login screen");
+
+        // Aggiunta action listeners
+        playerButton.addActionListener(e -> managePlayers());
+        coachButton.addActionListener(e -> manageCoaches());
+        gameButton.addActionListener(e -> manageGames());
         backButton.addActionListener(e -> {
             parentFrame.setVisible(true);
             dispose();
         });
-        add(backButton);
 
-        // Player management button
-        JButton playerButton = new JButton("Manage Players");
-        playerButton.addActionListener(e -> managePlayers());
-        add(playerButton);
+        // Aggiunta bottoni al pannello con spaziatura
+        buttonPanel.add(playerButton);
+        buttonPanel.add(Box.createVerticalStrut(10));
+        buttonPanel.add(coachButton);
+        buttonPanel.add(Box.createVerticalStrut(10));
+        buttonPanel.add(gameButton);
+        buttonPanel.add(Box.createVerticalStrut(10));
+        buttonPanel.add(backButton);
 
-        // Coach management button
-        JButton coachButton = new JButton("Manage Coaches");
-        coachButton.addActionListener(e -> manageCoaches());
-        add(coachButton);
+        // Aggiunta pannello bottoni al lato OVEST
+        mainPanel.add(buttonPanel, BorderLayout.WEST);
 
-        // Observer management button
-        JButton observerButton = new JButton("Manage Observers");
-        observerButton.addActionListener(e -> manageObservers());
-        add(observerButton);
+        // Status bar (Sud)
+        JLabel statusLabel = new JLabel("NBA Management System - Administrator Mode", SwingConstants.CENTER);
+        statusLabel.setBorder(BorderFactory.createEtchedBorder());
+        mainPanel.add(statusLabel, BorderLayout.SOUTH);
 
-        // Game management button
-        JButton gameButton = new JButton("Manage Games");
-        gameButton.addActionListener(e -> manageGames());
-        add(gameButton);
-
+        setContentPane(mainPanel);
         setVisible(true);
     }
 
+    private JPanel createBackgroundPanel() {
+        return new JPanel(new BorderLayout()) {
+            private final Image backgroundImage = new ImageIcon("NBA_Management/IMAGES/opt2.jpg")
+                    .getImage();
+
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                g.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), this);
+            }
+        };
+    }
+
+    private JButton createMenuButton(String text, String tooltip) {
+        JButton button = new JButton(text);
+        button.setToolTipText(tooltip);
+        button.setPreferredSize(new Dimension(200, 60));
+        button.setFocusPainted(false);
+        return button;
+    }
+
     private void managePlayers() {
-        String[] options = {"Add", "Remove", "Cancel"};
-        int choice = JOptionPane.showOptionDialog(this, 
-                "Player Management - Choose action:", 
-                "Player Management", 
-                JOptionPane.DEFAULT_OPTION, 
-                JOptionPane.QUESTION_MESSAGE, 
-                null, 
-                options, 
+        String[] options = { "Add", "Remove", "Cancel" };
+        int choice = JOptionPane.showOptionDialog(this,
+                "Player Management - Choose action:",
+                "Player Management",
+                JOptionPane.DEFAULT_OPTION,
+                JOptionPane.QUESTION_MESSAGE,
+                null,
+                options,
                 options[0]);
 
         if (choice == 0) { // Add
@@ -78,52 +120,49 @@ public class AdministratorPage extends JFrame {
         JTextField nameField = new JTextField();
         JTextField surnameField = new JTextField();
         JTextField ageField = new JTextField();
-        String[] positions = {"PG", "SG", "SF", "PF", "C"};
+        String[] positions = { "PG", "SG", "SF", "PF", "C" };
         JComboBox<String> positionCombo = new JComboBox<>(positions);
-        String[] categories = {"Superstar", "AllStar", "RolePlayer", "BenchPlayer"};
+        String[] categories = { "Superstar", "AllStar", "RolePlayer", "BenchPlayer" };
         JComboBox<String> categoryCombo = new JComboBox<>(categories);
         JTextField ratingField = new JTextField();
         JTextField experienceField = new JTextField();
-        JCheckBox freeAgentCheck = new JCheckBox("Free Agent");
 
         Object[] message = {
-            "Name:", nameField,
-            "Surname:", surnameField,
-            "Age:", ageField,
-            "Position:", positionCombo,
-            "Category:", categoryCombo,
-            "Rating:", ratingField,
-            "Experience (years):", experienceField,
-            freeAgentCheck
+                "Name:", nameField,
+                "Surname:", surnameField,
+                "Age:", ageField,
+                "Position:", positionCombo,
+                "Category:", categoryCombo,
+                "Rating:", ratingField,
+                "Experience (years):", experienceField,
         };
 
-        int option = JOptionPane.showConfirmDialog(this, 
-                message, 
-                "Add New Player", 
+        int option = JOptionPane.showConfirmDialog(this,
+                message,
+                "Add New Player",
                 JOptionPane.OK_CANCEL_OPTION);
 
         if (option == JOptionPane.OK_OPTION) {
             try {
                 model.addPlayer(
-                    nameField.getText(),
-                    surnameField.getText(),
-                    Integer.parseInt(ageField.getText()),
-                    positionCombo.getSelectedItem().toString(),
-                    categoryCombo.getSelectedItem().toString(),
-                    Double.parseDouble(ratingField.getText()),
-                    Integer.parseInt(experienceField.getText()),
-                    freeAgentCheck.isSelected()
-                );
+                        nameField.getText(),
+                        surnameField.getText(),
+                        Integer.parseInt(ageField.getText()),
+                        positionCombo.getSelectedItem().toString(),
+                        categoryCombo.getSelectedItem().toString(),
+                        Double.parseDouble(ratingField.getText()),
+                        Integer.parseInt(experienceField.getText()),
+                        true); // Player viene aggiunto sempre come free agent
                 JOptionPane.showMessageDialog(this, "Player added successfully!");
             } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(this, 
-                        "Invalid number format: " + ex.getMessage(), 
-                        "Error", 
+                JOptionPane.showMessageDialog(this,
+                        "Invalid number format: " + ex.getMessage(),
+                        "Error",
                         JOptionPane.ERROR_MESSAGE);
             } catch (SQLException ex) {
-                JOptionPane.showMessageDialog(this, 
-                        "Database error: " + ex.getMessage(), 
-                        "Error", 
+                JOptionPane.showMessageDialog(this,
+                        "Database error: " + ex.getMessage(),
+                        "Error",
                         JOptionPane.ERROR_MESSAGE);
             }
         }
@@ -132,14 +171,13 @@ public class AdministratorPage extends JFrame {
     private void removePlayer() {
         try {
             List<Player> players = model.getAllPlayers();
-            String[] playerNames = players.stream()
-                .map(p -> p.getIdPlayer() + ": " + p.getName() + " " + p.getSurname())
-                .toArray(String[]::new);
-
-            if (playerNames.length == 0) {
+            if (players.isEmpty()) {
                 JOptionPane.showMessageDialog(this, "No players available to remove");
                 return;
             }
+            String[] playerNames = players.stream()
+                    .map(p -> p.getIdPlayer() + ": " + p.getName() + " " + p.getSurname())
+                    .toArray(String[]::new);
 
             String selected = (String) JOptionPane.showInputDialog(this,
                     "Select player to remove:",
@@ -151,34 +189,33 @@ public class AdministratorPage extends JFrame {
 
             if (selected != null) {
                 int playerId = Integer.parseInt(selected.split(":")[0]);
-                
                 int confirm = JOptionPane.showConfirmDialog(this,
                         "Are you sure you want to remove this player?",
                         "Confirm Removal",
                         JOptionPane.YES_NO_OPTION);
-                
+
                 if (confirm == JOptionPane.YES_OPTION) {
                     model.removePlayer(playerId);
                     JOptionPane.showMessageDialog(this, "Player removed successfully!");
                 }
             }
         } catch (SQLException ex) {
-            JOptionPane.showMessageDialog(this, 
-                    "Error: " + ex.getMessage(), 
-                    "Error", 
+            JOptionPane.showMessageDialog(this,
+                    "Error: " + ex.getMessage(),
+                    "Error",
                     JOptionPane.ERROR_MESSAGE);
         }
     }
 
     private void manageCoaches() {
-        String[] options = {"Add", "Remove", "Cancel"};
-        int choice = JOptionPane.showOptionDialog(this, 
-                "Coach Management - Choose action:", 
-                "Coach Management", 
-                JOptionPane.DEFAULT_OPTION, 
-                JOptionPane.QUESTION_MESSAGE, 
-                null, 
-                options, 
+        String[] options = { "Add", "Remove", "Cancel" };
+        int choice = JOptionPane.showOptionDialog(this,
+                "Coach Management - Choose action:",
+                "Coach Management",
+                JOptionPane.DEFAULT_OPTION,
+                JOptionPane.QUESTION_MESSAGE,
+                null,
+                options,
                 options[0]);
 
         if (choice == 0) { // Add
@@ -193,35 +230,32 @@ public class AdministratorPage extends JFrame {
         JTextField surnameField = new JTextField();
         JTextField salaryField = new JTextField();
         JTextField experienceField = new JTextField();
-        JCheckBox freeCheck = new JCheckBox("Free");
 
         Object[] message = {
-            "Name:", nameField,
-            "Surname:", surnameField,
-            "Salary:", salaryField,
-            "Experience (years):", experienceField,
-            freeCheck
+                "Name:", nameField,
+                "Surname:", surnameField,
+                "Salary:", salaryField,
+                "Experience (years):", experienceField,
         };
 
-        int option = JOptionPane.showConfirmDialog(this, 
-                message, 
-                "Add New Coach", 
+        int option = JOptionPane.showConfirmDialog(this,
+                message,
+                "Add New Coach",
                 JOptionPane.OK_CANCEL_OPTION);
 
         if (option == JOptionPane.OK_OPTION) {
             try {
                 model.addCoach(
-                    nameField.getText(),
-                    surnameField.getText(),
-                    Double.parseDouble(salaryField.getText()),
-                    Integer.parseInt(experienceField.getText()),
-                    freeCheck.isSelected()
-                );
+                        nameField.getText(),
+                        surnameField.getText(),
+                        Double.parseDouble(salaryField.getText()),
+                        Integer.parseInt(experienceField.getText()),
+                        true); // Coach viene aggiunto sempre come 'free'
                 JOptionPane.showMessageDialog(this, "Coach added successfully!");
             } catch (SQLException | NumberFormatException ex) {
-                JOptionPane.showMessageDialog(this, 
-                        "Error: " + ex.getMessage(), 
-                        "Error", 
+                JOptionPane.showMessageDialog(this,
+                        "Error: " + ex.getMessage(),
+                        "Error",
                         JOptionPane.ERROR_MESSAGE);
             }
         }
@@ -230,14 +264,13 @@ public class AdministratorPage extends JFrame {
     private void removeCoach() {
         try {
             List<Coach> coaches = model.getAllCoaches();
-            String[] coachNames = coaches.stream()
-                .map(c -> c.getIdCoach() + ": " + c.getName() + " " + c.getSurname())
-                .toArray(String[]::new);
-
-            if (coachNames.length == 0) {
+            if (coaches.isEmpty()) {
                 JOptionPane.showMessageDialog(this, "No coaches available to remove");
                 return;
             }
+            String[] coachNames = coaches.stream()
+                    .map(c -> c.getIdCoach() + ": " + c.getName() + " " + c.getSurname())
+                    .toArray(String[]::new);
 
             String selected = (String) JOptionPane.showInputDialog(this,
                     "Select coach to remove:",
@@ -249,132 +282,33 @@ public class AdministratorPage extends JFrame {
 
             if (selected != null) {
                 int coachId = Integer.parseInt(selected.split(":")[0]);
-                
                 int confirm = JOptionPane.showConfirmDialog(this,
                         "Are you sure you want to remove this coach?",
                         "Confirm Removal",
                         JOptionPane.YES_NO_OPTION);
-                
+
                 if (confirm == JOptionPane.YES_OPTION) {
                     model.removeCoach(coachId);
                     JOptionPane.showMessageDialog(this, "Coach removed successfully!");
                 }
             }
         } catch (SQLException ex) {
-            JOptionPane.showMessageDialog(this, 
-                    "Error: " + ex.getMessage(), 
-                    "Error", 
-                    JOptionPane.ERROR_MESSAGE);
-        }
-    }
-
-    private void manageObservers() {
-        String[] options = {"Add", "Remove", "Cancel"};
-        int choice = JOptionPane.showOptionDialog(this, 
-                "Observer Management - Choose action:", 
-                "Observer Management", 
-                JOptionPane.DEFAULT_OPTION, 
-                JOptionPane.QUESTION_MESSAGE, 
-                null, 
-                options, 
-                options[0]);
-
-        if (choice == 0) { // Add
-            addObserver();
-        } else if (choice == 1) { // Remove
-            removeObserver();
-        }
-    }
-
-    private void addObserver() {
-        JTextField nameField = new JTextField();
-        JTextField surnameField = new JTextField();
-        JTextField salaryField = new JTextField();
-        JTextField experienceField = new JTextField();
-        JCheckBox freeCheck = new JCheckBox("Free");
-
-        Object[] message = {
-            "Name:", nameField,
-            "Surname:", surnameField,
-            "Salary:", salaryField,
-            "Experience (years):", experienceField,
-            freeCheck
-        };
-
-        int option = JOptionPane.showConfirmDialog(this, 
-                message, 
-                "Add New Observer", 
-                JOptionPane.OK_CANCEL_OPTION);
-
-        if (option == JOptionPane.OK_OPTION) {
-            try {
-                model.addObserver(
-                    nameField.getText(),
-                    surnameField.getText(),
-                    Double.parseDouble(salaryField.getText()),
-                    Integer.parseInt(experienceField.getText()),
-                    freeCheck.isSelected()
-                );
-                JOptionPane.showMessageDialog(this, "Observer added successfully!");
-            } catch (SQLException | NumberFormatException ex) {
-                JOptionPane.showMessageDialog(this, 
-                        "Error: " + ex.getMessage(), 
-                        "Error", 
-                        JOptionPane.ERROR_MESSAGE);
-            }
-        }
-    }
-
-    private void removeObserver() {
-        try {
-            List<Observer> observers = model.getAllObservers();
-            String[] observerNames = observers.stream()
-                .map(o -> o.getIdObserver() + ": " + o.getName() + " " + o.getSurname())
-                .toArray(String[]::new);
-
-            if (observerNames.length == 0) {
-                JOptionPane.showMessageDialog(this, "No observers available to remove");
-                return;
-            }
-
-            String selected = (String) JOptionPane.showInputDialog(this,
-                    "Select observer to remove:",
-                    "Remove Observer",
-                    JOptionPane.QUESTION_MESSAGE,
-                    null,
-                    observerNames,
-                    observerNames[0]);
-
-            if (selected != null) {
-                int observerId = Integer.parseInt(selected.split(":")[0]);
-                
-                int confirm = JOptionPane.showConfirmDialog(this,
-                        "Are you sure you want to remove this observer?",
-                        "Confirm Removal",
-                        JOptionPane.YES_NO_OPTION);
-                
-                if (confirm == JOptionPane.YES_OPTION) {
-                    model.removeObserver(observerId);
-                    JOptionPane.showMessageDialog(this, "Observer removed successfully!");
-                }
-            }
-        } catch (SQLException ex) {
-            JOptionPane.showMessageDialog(this, 
-                    "Error: " + ex.getMessage(), 
-                    "Error", 
+            JOptionPane.showMessageDialog(this,
+                    "Error: " + ex.getMessage(),
+                    "Error",
                     JOptionPane.ERROR_MESSAGE);
         }
     }
 
     private void manageGames() {
-        String[] options = {"Add", "Remove", "Cancel"};
-        int choice = JOptionPane.showOptionDialog(this, 
-                "Game Management - Choose action:", 
-                "Game Management", 
-                JOptionPane.DEFAULT_OPTION, 
-                JOptionPane.QUESTION_MESSAGE, 
-                null, 
-                options, 
+        String[] options = { "Add", "Remove", "Cancel" };
+        int choice = JOptionPane.showOptionDialog(this,
+                "Game Management - Choose action:",
+                "Game Management",
+                JOptionPane.DEFAULT_OPTION,
+                JOptionPane.QUESTION_MESSAGE,
+                null,
+                options,
                 options[0]);
 
         if (choice == 0) { // Add
@@ -385,39 +319,54 @@ public class AdministratorPage extends JFrame {
     }
 
     private void addGame() {
-        JTextField team1Field = new JTextField();
-        JTextField team2Field = new JTextField();
+        JTextField team1NameField = new JTextField();
+        JTextField team2NameField = new JTextField();
         JTextField resultField = new JTextField();
         JTextField stadiumField = new JTextField();
         JTextField dateField = new JTextField();
 
         Object[] message = {
-            "Team 1 ID:", team1Field,
-            "Team 2 ID:", team2Field,
-            "Result:", resultField,
-            "Stadium ID:", stadiumField,
-            "Date (YYYY-MM-DD):", dateField
+                "Home Team Name:", team1NameField,
+                "Away Team Name:", team2NameField,
+                "Result (e.g., 100-98):", resultField,
+                "Stadium ID:", stadiumField,
+                "Date (YYYY-MM-DD):", dateField
         };
 
-        int option = JOptionPane.showConfirmDialog(this, 
-                message, 
-                "Add New Game", 
+        int option = JOptionPane.showConfirmDialog(this,
+                message,
+                "Add New Game",
                 JOptionPane.OK_CANCEL_OPTION);
 
         if (option == JOptionPane.OK_OPTION) {
             try {
+                String team1Name = team1NameField.getText();
+                String team2Name = team2NameField.getText();
+
+                if (team1Name.equalsIgnoreCase(team2Name)) {
+                    JOptionPane.showMessageDialog(this, "Home team and away team cannot be the same.", "Input Error", JOptionPane.ERROR_MESSAGE);
+                    return; 
+                }
+
+                Team team1 = model.getTeamByName(team1Name);
+                Team team2 = model.getTeamByName(team2Name);
+
+                if (team1 == null || team2 == null) {
+                    String missingTeam = (team1 == null) ? team1Name : team2Name;
+                    throw new NoSuchElementException("Team not found: " + missingTeam);
+                }
+
                 model.addGame(
-                    Integer.parseInt(team1Field.getText()),
-                    Integer.parseInt(team2Field.getText()),
-                    resultField.getText(),
-                    Integer.parseInt(stadiumField.getText()),
-                    java.sql.Date.valueOf(dateField.getText()).toLocalDate()
-                );
+                        team1.getIdTeam(), 
+                        team2.getIdTeam(), 
+                        resultField.getText(),
+                        Integer.parseInt(stadiumField.getText()),
+                        java.sql.Date.valueOf(dateField.getText()).toLocalDate());
                 JOptionPane.showMessageDialog(this, "Game added successfully!");
-            } catch (SQLException | IllegalArgumentException ex) {
-                JOptionPane.showMessageDialog(this, 
-                        "Error: " + ex.getMessage(), 
-                        "Error", 
+            } catch (SQLException | NumberFormatException | DateTimeParseException | NoSuchElementException ex) {
+                JOptionPane.showMessageDialog(this,
+                        "Error: " + ex.getMessage(),
+                        "Error",
                         JOptionPane.ERROR_MESSAGE);
             }
         }
@@ -426,13 +375,33 @@ public class AdministratorPage extends JFrame {
     private void removeGame() {
         try {
             List<Game> games = model.getAllGames();
-            String[] gameNames = games.stream()
-                .map(g -> g.getIdGame() + ": Team " + g.getIdTeam1() + " vs Team " + g.getIdTeam2() + " on " + g.getDate())
-                .toArray(String[]::new);
-
-            if (gameNames.length == 0) {
+            if (games.isEmpty()) {
                 JOptionPane.showMessageDialog(this, "No games available to remove");
                 return;
+            }
+
+            // MODIFICA: Prepara i nomi delle partite con i nomi completi delle squadre.
+            // Questo richiede che il Model abbia un metodo getTeamById(int).
+            String[] gameNames = new String[games.size()];
+            for (int i = 0; i < games.size(); i++) {
+                Game g = games.get(i);
+                try {
+                    // Si assume che esista model.getTeamById(int) nel model
+                    Team team1 = model.getTeamById(g.getIdTeam1());
+                    Team team2 = model.getTeamById(g.getIdTeam2());
+
+                    // Se un team non viene trovato (improbabile con DB consistente), mostra l'ID come fallback.
+                    String team1Name = (team1 != null) ? team1.getCity() + " " + team1.getName() : "ID: " + g.getIdTeam1();
+                    String team2Name = (team2 != null) ? team2.getCity() + " " + team2.getName() : "ID: " + g.getIdTeam2();
+                    
+                    gameNames[i] = g.getIdGame() + ": " + team1Name + " vs " + team2Name + " on " + g.getDate();
+                } catch (SQLException ex) {
+                    JOptionPane.showMessageDialog(this,
+                            "Database error while fetching team names: " + ex.getMessage(),
+                            "Error",
+                            JOptionPane.ERROR_MESSAGE);
+                    return; // Esce dal metodo se c'è un errore DB
+                }
             }
 
             String selected = (String) JOptionPane.showInputDialog(this,
@@ -445,21 +414,22 @@ public class AdministratorPage extends JFrame {
 
             if (selected != null) {
                 int gameId = Integer.parseInt(selected.split(":")[0]);
-                
+
                 int confirm = JOptionPane.showConfirmDialog(this,
                         "Are you sure you want to remove this game?",
                         "Confirm Removal",
                         JOptionPane.YES_NO_OPTION);
-                
+
                 if (confirm == JOptionPane.YES_OPTION) {
                     model.removeGame(gameId);
                     JOptionPane.showMessageDialog(this, "Game removed successfully!");
                 }
             }
         } catch (SQLException ex) {
-            JOptionPane.showMessageDialog(this, 
-                    "Error: " + ex.getMessage(), 
-                    "Error", 
+            // Questo catch gestisce gli errori in model.getAllGames() o model.removeGame()
+            JOptionPane.showMessageDialog(this,
+                    "Error: " + ex.getMessage(),
+                    "Error",
                     JOptionPane.ERROR_MESSAGE);
         }
     }

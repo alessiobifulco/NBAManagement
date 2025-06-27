@@ -103,4 +103,6 @@ public interface Model {
     void addPlayer(String text, String text2, int int1, String string, String string2, double double1, int int2,
             boolean b) throws SQLException;
 
+    public Team getTeamByName(String fullName) throws SQLException;
+
 }
