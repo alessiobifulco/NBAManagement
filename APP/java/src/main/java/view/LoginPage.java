@@ -24,12 +24,13 @@ public class LoginPage {
 
     private void initializeComponents() {
         // Pannello principale con layout
-        JPanel mainPanel = new JPanel(new GridBagLayout());
+        JPanel mainPanel = createBackgroundPanel();
         mainPanel.setBorder(BorderFactory.createEmptyBorder(50, 50, 50, 50));
 
         // Pannello per i pulsanti
         JPanel buttonPanel = new JPanel(new GridLayout(2, 1, 10, 20));
         buttonPanel.setBorder(BorderFactory.createEmptyBorder(20, 100, 20, 100));
+        buttonPanel.setOpaque(false);
 
         // Bottone Login (stile sistema)
         JButton loginButton = new JButton("Login");
@@ -45,17 +46,23 @@ public class LoginPage {
         buttonPanel.add(loginButton);
         buttonPanel.add(adminButton);
 
+        // Titolo in un pannello separato con uno sfondo
+        JPanel titlePanel = new JPanel();
+        titlePanel.setOpaque(true);
+        titlePanel.setBackground(new Color(0, 0, 0, 150)); // Sfondo semitrasparente
+        JLabel titleLabel = new JLabel("NBA Management System");
+        titleLabel.setFont(new Font("My GM", Font.BOLD | Font.ITALIC, 40)); // Font più grande
+        titleLabel.setForeground(Color.WHITE);  // Colore del testo
+        titlePanel.add(titleLabel);
+
         // Posizionamento componenti
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridwidth = GridBagConstraints.REMAINDER;
         gbc.anchor = GridBagConstraints.CENTER;
 
-        // Titolo
-        JLabel titleLabel = new JLabel("NBA Management System");
-        titleLabel.setFont(new Font(titleLabel.getFont().getName(), Font.BOLD, 24));
-        mainPanel.add(titleLabel, gbc);
-        mainPanel.add(Box.createVerticalStrut(50), gbc);
-        mainPanel.add(buttonPanel, gbc);
+        mainPanel.add(titlePanel, gbc);  // Aggiungi il pannello del titolo
+        mainPanel.add(Box.createVerticalStrut(50), gbc); // Distanza verticale
+        mainPanel.add(buttonPanel, gbc);  // Aggiungi il pannello dei pulsanti
 
         frame.add(mainPanel, BorderLayout.CENTER);
         frame.revalidate();
@@ -91,7 +98,7 @@ public class LoginPage {
         JCheckBox showPasswordCheck = new JCheckBox("Mostra password");
         showPasswordCheck.addItemListener(e -> {
             if (e.getStateChange() == ItemEvent.SELECTED) {
-                passwordField.setEchoChar((char)0);
+                passwordField.setEchoChar((char) 0);
             } else {
                 passwordField.setEchoChar('•');
             }
@@ -115,14 +122,14 @@ public class LoginPage {
 
             // Validazioni
             if (email.isEmpty() || password.isEmpty()) {
-                JOptionPane.showMessageDialog(loginDialog, 
-                    "Inserisci sia email che password", "Errore", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(loginDialog,
+                        "Inserisci sia email che password", "Errore", JOptionPane.ERROR_MESSAGE);
                 return;
             }
 
             if (!isValidEmail(email)) {
-                JOptionPane.showMessageDialog(loginDialog, 
-                    "Formato email non valido", "Errore", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(loginDialog,
+                        "Formato email non valido", "Errore", JOptionPane.ERROR_MESSAGE);
                 return;
             }
 
@@ -132,13 +139,13 @@ public class LoginPage {
                     loginDialog.dispose();
                     frame.dispose();
                 } else {
-                    JOptionPane.showMessageDialog(loginDialog, 
-                        "Credenziali non valide", "Errore", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(loginDialog,
+                            "Credenziali non valide", "Errore", JOptionPane.ERROR_MESSAGE);
                 }
             } catch (SQLException ex) {
                 ex.printStackTrace();
-                JOptionPane.showMessageDialog(loginDialog, 
-                    "Errore nel tentativo di login", "Errore", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(loginDialog,
+                        "Errore nel tentativo di login", "Errore", JOptionPane.ERROR_MESSAGE);
             }
         });
 
@@ -154,7 +161,21 @@ public class LoginPage {
 
     private boolean isValidEmail(String email) {
         return Pattern.compile("^[\\w-.]+@([\\w-]+\\.)+[\\w-]{2,4}$")
-                     .matcher(email)
-                     .matches();
+                .matcher(email)
+                .matches();
+    }
+
+    private JPanel createBackgroundPanel() {
+        System.out.println("Working dir: " + System.getProperty("user.dir"));
+        return new JPanel(new GridBagLayout()) {
+            private final Image backgroundImage = new ImageIcon("NBA_Management/IMAGES/opt3.jpg")
+                    .getImage();
+
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                g.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), this);
+            }
+        };
     }
 }

@@ -34,10 +34,22 @@ public class TradePage extends JFrame {
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLayout(new BorderLayout(10, 10));
 
-        JPanel mainPanel = new JPanel(new BorderLayout());
-        mainPanel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
+        JPanel mainPanel = new JPanel(new BorderLayout()){
+            private final Image backgroundImage = new ImageIcon("NBA_Management/IMAGES/lakersBackground.jpg").getImage();
 
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 20));
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                g.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), this);
+            }
+        };
+
+        mainPanel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
+        
+
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 20));
+        buttonPanel.setOpaque(false);
+        
 
         JButton browseButton = new JButton("Browse Players");
         browseButton.addActionListener(e -> showBrowsePage());
@@ -639,4 +651,17 @@ public class TradePage extends JFrame {
             return this;
         }
     }
+
+    private JPanel createBackgroundPanel() {
+        return new JPanel(new GridBagLayout()) {
+            private final Image backgroundImage = new ImageIcon("METTI PERCORSO IMMAGINE QUI").getImage();
+
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                g.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), this);
+            }
+        };
+    }
+
 }
